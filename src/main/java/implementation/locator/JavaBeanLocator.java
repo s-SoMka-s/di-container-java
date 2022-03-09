@@ -1,4 +1,4 @@
-package implementation.configurator;
+package implementation.locator;
 
 import org.reflections.Reflections;
 
@@ -9,14 +9,14 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Реализация BeanConfigurator полностью на Java.
  */
-public class JavaBeanConfigurator implements BeanConfigurator {
+public class JavaBeanLocator implements BeanLocator {
 
     private final Reflections scanner;
 
     // Необязательно мы должны искать реализации в коде: у нас может быть Map, в котором может быть соответ свзязь
     private final Map<Class, Class> interfaceToImplementation;
 
-    public JavaBeanConfigurator(String packageToScan, Map<Class, Class> interfaceToImplementation) {
+    public JavaBeanLocator(String packageToScan, Map<Class, Class> interfaceToImplementation) {
         this.scanner = new Reflections(packageToScan);
         this.interfaceToImplementation = new ConcurrentHashMap<>(interfaceToImplementation);
     }
@@ -25,7 +25,7 @@ public class JavaBeanConfigurator implements BeanConfigurator {
     // Будем пополнять наш Map по ходу поиска реализации интерфейсов в коде, чтобы потом можно было быстро получить
     // доступ к реализации интерфейса (для ко-то уже находили реализацию).
     public <T> Class<? extends T> getImplementationClass(Class<T> interfaceClass) {
-        if (interfaceToImplementation.get(interfaceClass) == null) {
+        return interfaceToImplementation.computeIfAbsent(interfaceClass, clazz -> {
             // передаём интерфейс. Получаем множество классов, которые реализуют этот интерфейс.
             Set<Class<? extends T>> implementationClasses = scanner.getSubTypesOf(interfaceClass);
 
@@ -39,8 +39,6 @@ public class JavaBeanConfigurator implements BeanConfigurator {
 
             // возвращаем единственный элемент
             return implementationClasses.stream().findFirst().get();
-        } else {
-            return interfaceToImplementation.get(interfaceClass);
-        }
+        });
     }
 }

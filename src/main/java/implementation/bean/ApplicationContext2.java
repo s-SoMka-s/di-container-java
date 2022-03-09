@@ -3,7 +3,7 @@ package implementation.bean;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ApplicationContext implements BeanFactory {
+public class ApplicationContext2 implements BeanFactory2 {
 
     /**
      * Container itself

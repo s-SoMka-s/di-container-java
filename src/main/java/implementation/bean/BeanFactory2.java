@@ -1,6 +1,6 @@
 package implementation.bean;
 
-public interface BeanFactory {
+public interface BeanFactory2 {
 
     /**
      * Get bean by bean name

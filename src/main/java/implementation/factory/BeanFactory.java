@@ -1,29 +1,31 @@
 package implementation.factory;
 
 import implementation.annotation.Inject;
+import implementation.context.Context;
 import implementation.configuration.Configuration;
 import implementation.configuration.JavaConfiguration;
-import implementation.configurator.BeanConfigurator;
-import implementation.configurator.JavaBeanConfigurator;
+import implementation.locator.BeanLocator;
+import implementation.locator.JavaBeanLocator;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class BeanFactory {
 
-    private static final BeanFactory BEAN_FACTORY = new BeanFactory();
-    private final BeanConfigurator beanConfigurator;
+    private final BeanLocator beanLocator;
     private final Configuration configuration;
 
-    private BeanFactory() {
-        this.configuration = new JavaConfiguration();
-        this.beanConfigurator = new JavaBeanConfigurator(configuration.getPackageToScan(),
-                configuration.getInterfaceToImplementation());
-    }
+    // Нужен при работе с полями Бина, так как необходимые зависимости уже могут быть, что можно определить через
+    // кэш в ApplicationContext
+    private final Context context;
 
-    // Синглтон реализация
-    public static BeanFactory getInstance() {
-        return BEAN_FACTORY;
+    public BeanFactory(Context context) {
+        this.configuration = new JavaConfiguration();
+        this.beanLocator = new JavaBeanLocator(configuration.getPackageToScan(),
+                configuration.getInterfaceToImplementation());
+        this.context = context;
     }
 
     // по интерфейсу возвращаем бин - объект класса, реализующий интерфейс.
@@ -33,7 +35,7 @@ public class BeanFactory {
         Class<? extends T> implementationClass = clazz;
 
         if (implementationClass.isInterface()) {
-            implementationClass = beanConfigurator.getImplementationClass(implementationClass);
+            implementationClass = beanLocator.getImplementationClass(implementationClass);
         }
 
         // Перед получением конструктора сервиса, который нужно создать, ищем все аттрибуты (fields), которые
@@ -46,12 +48,10 @@ public class BeanFactory {
             // Получим только те поля, которые аннотированы через Inject.
             // Пройдёся через все такие поля, которые надо инжектить.
             // Мы понимаем, какой это тип. Теперь его нужно создать и внедрить в Бин.
-            for (int i = 0; i < implementationClass.getDeclaredFields().length; i++) {
-                Field field = implementationClass.getDeclaredFields()[i];
-                if (field.isAnnotationPresent((Inject.class))) {
-                    field.setAccessible(true);
-                    field.set(bean, BEAN_FACTORY.getBean(field.getType()));
-                }
+            for (Field field : Arrays.stream(implementationClass.getDeclaredFields()).filter(field ->
+                    field.isAnnotationPresent(Inject.class)).collect(Collectors.toList())) {
+                field.setAccessible(true);
+                field.set(bean, context.getBean(field.getType()));
             }
 
             // Получаем конструктор (по умолчанию) сервиса, который нужно создать.

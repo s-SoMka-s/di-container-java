@@ -1,6 +1,6 @@
-package implementation.configurator;
+package implementation.locator;
 
-public interface BeanConfigurator {
+public interface BeanLocator {
 
     <T> Class<? extends T> getImplementationClass(Class<T> interfaceClass);
 }
