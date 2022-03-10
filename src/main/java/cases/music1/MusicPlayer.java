@@ -1,10 +1,12 @@
-package cases.music;
+package cases.music1;
 
-import implementation.annotation.Inject;
-import implementation.factory.BeanFactory;
+import javax.inject.Inject;
+import javax.inject.Named;
 
+@Named
 public class MusicPlayer {
     @Inject
+    @Named("rockMusic")
     private Music music;
 
     //private Music music = BeanFactory.getInstance().getBean(Music.class);

@@ -1,6 +1,6 @@
 package implementation.bean.XML;
 
-import implementation.bean.Bean;
+import implementation.Bean;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;

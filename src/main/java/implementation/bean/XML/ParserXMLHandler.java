@@ -1,6 +1,6 @@
 package implementation.bean.XML;
 
-import implementation.bean.Bean;
+import implementation.Bean;
 import org.xml.sax.Attributes;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class ParserXMLHandler extends DefaultHandler implements Constants {
     private String id = null;
     private String aClass = null;
-    private String lifeCycle = null;
+    private String scope = null;
 
     private String currentTagName;
 
@@ -30,7 +30,7 @@ public class ParserXMLHandler extends DefaultHandler implements Constants {
             aClass = attributes.getValue(ATTR_CLASS).trim();
         }
         if (attributes.getValue(ATTR_LIFECYCLE) != null) {
-            lifeCycle = attributes.getValue(ATTR_LIFECYCLE).trim();
+            scope = attributes.getValue(ATTR_LIFECYCLE).trim();
         }
 
     }
@@ -40,11 +40,11 @@ public class ParserXMLHandler extends DefaultHandler implements Constants {
         if (qName.equals(TAG_BEAN)) {
              validateBean();
 
-            try {
-                beans.add(new Bean(Class.forName(aClass), id, lifeCycle));
+            /*try {
+                beans.add(new Bean(Class.forName(aClass), id, scope В тип Scope надо!!!));
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
-            }
+            }*/
 
             clearVariables();
         }
@@ -59,7 +59,7 @@ public class ParserXMLHandler extends DefaultHandler implements Constants {
     private void clearVariables() {
         id = null;
         aClass = null;
-        lifeCycle = null;
+        scope = null;
     }
 
     // Убеждемся, что пользователь корректно указал бин.
