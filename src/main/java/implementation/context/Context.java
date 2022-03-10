@@ -4,7 +4,6 @@ import implementation.Bean;
 import implementation.Scope;
 import implementation.configuration.Configuration;
 import implementation.configuration.JavaConfiguration;
-import implementation.factory.BeanFactory;
 import org.reflections.Reflections;
 import org.reflections.scanners.FieldAnnotationsScanner;
 import org.reflections.scanners.SubTypesScanner;
@@ -24,7 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Context {
 
-    private BeanFactory beanFactory;
     private final Configuration configuration;
     private final Map<Class, Bean> beanMapByClass = new ConcurrentHashMap<>();
     private final Map<Class, Class<?>> classMapByClass = new ConcurrentHashMap<>();
@@ -38,64 +36,17 @@ public class Context {
     // Если есть, то мы его вернём. Если нет, то создадим и положим в Map.s
 
     public Context() {
-        BeanFactory beanFactory = new implementation.factory.BeanFactory(this);
         configuration = new JavaConfiguration();
-        this.setBeanFactory(beanFactory);
         refresh();
     }
 
     // возвращаем бин по его классу - всё аналогично BeanFactory.
 
-    public void setBeanFactory(BeanFactory beanFactory) {
-        this.beanFactory = beanFactory;
-    }
-
     public <T> T getBean(Class<T> clazz) {
         if (beanMapByClass.containsKey(clazz)) {
             return (T) beanMapByClass.get(clazz).getBean();
         }
-
-        T bean;
-        var beanClass = beanFactory.getBean(clazz, null, null);
-        try {
-            bean = beanClass.getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
-                NoSuchMethodException e) {
-            throw new RuntimeException();
-        }
-
-        //beanMapByClass.put(clazz, bean);
-        classMapByClass.put(clazz, beanClass);
-
-        return bean;
-    }
-
-    public <T> T getBean(Class<T> clazz, Class<T> parentsClass, Annotation[] annotations) {
-        // Если уже есть, то его и возвращаем
-        if (classMapByClass.containsKey(clazz)) {
-            if (classMapByClass.get(clazz).isAnnotationPresent(Named.class)) {
-                if (classMapByClass.get(clazz).getAnnotation(Named.class).equals(annotations[1])) {
-                    return (T) beanMapByClass.get(clazz);
-                }
-            }
-        }
-
-        //Если нет, то создаём, кладём и возвращаем
-        T bean;
-        var beanClass = beanFactory.getBean(clazz, parentsClass, annotations);
-        try {
-            bean = beanClass.getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException();
-        }
-
-        if (beanClass.isAnnotationPresent(Named.class)) {
-            classMapByClass.put(clazz, beanClass);
-            //beanMapByName.put(beanClass.getAnnotation(Named.class).value(), clazz);
-            //beanMapByClass.put(clazz, bean);
-        }
-
-        return bean;
+        throw new RuntimeException("No such bean: " + clazz);
     }
 
     public void refresh() {
@@ -105,25 +56,37 @@ public class Context {
 
         Set<Class<?>> namedClasses = scanner.getTypesAnnotatedWith(Named.class);
         //Set<Field> injectedFields = scanner.getFieldsAnnotatedWith(Inject.class);
-        //System.out.println("scan classes with Bean annotation : " + namedClasses.toString());
 
+        /**
+         * Для начала ищу все классы, которые по сути являются компонентами, т.е. имеется аннотация Named и
+         * нет(!) аннотации Inject.
+         * В аннотациях Named могут быть указаны id компонента или не могут. Если не могут, то задаём базовое
+         * имя, равное имени класса, т.е. будет уникальным, и отмечаем, что это имя дефолтное.
+         */
         for (Class beanClass : namedClasses) {
-            if (!((Named) beanClass.getAnnotation(Named.class)).value().equals("")) {
-                if (classMapByName.get(((Named) beanClass.getAnnotation(Named.class)).value()) != null) {
-                    throw new RuntimeException("Cannot couple class/interface" +
-                            "\nMultiple use of the same ID: " +
-                            ((Named) beanClass.getAnnotation(Named.class)).value());
+            if (!beanClass.isAnnotationPresent(Inject.class)) {
+                if (!((Named) beanClass.getAnnotation(Named.class)).value().equals("")) {
+                    if (classMapByName.get(((Named) beanClass.getAnnotation(Named.class)).value()) != null) {
+                        throw new RuntimeException("Cannot couple class/interface" +
+                                "\nMultiple use of the same ID: " +
+                                ((Named) beanClass.getAnnotation(Named.class)).value());
+                    }
+                    classMapByName.put(((Named) beanClass.getAnnotation(Named.class)).value(), beanClass);
+                } else {
+                    classMapByName.put(defaultName(beanClass), beanClass);
+                    defaultNames.add(defaultName(beanClass));
                 }
-                classMapByName.put(((Named) beanClass.getAnnotation(Named.class)).value(), beanClass);
-            } else {
-                classMapByName.put(defaultName(beanClass), beanClass);
-                defaultNames.add(defaultName(beanClass));
             }
         }
 
 
-        for (int i = namedClasses.size() - 1; i >= 0; i--) {
-            //System.out.println("PRE" + namedClasses.toArray()[i]);
+        /**
+         * Согласно спецификации, начнём с создания бинов указанных выше компонентов. Будем пытаться внедрять
+         * зависимости: анализируем (пока что) поля на наличие Injected и пытаемся произвести байндинг
+         * (возможен уход внутрь по рекурсии, чтобы атомарные компоненты были сперва определены)
+         */
+        // TODO Ниже всё идет реализация под поля! Нужно интгрировать аккуратно для сеттеров и конструкторов
+        for (int i = 0; i < namedClasses.size(); i++) {
             createBean((Class<?>) namedClasses.toArray()[i]);
         }
     }
@@ -132,10 +95,12 @@ public class Context {
         JavaConfiguration javaConfiguration = new JavaConfiguration();
         Reflections scanner = new Reflections(javaConfiguration.getPackageToScan());
 
-        //System.out.println("Enter" + beanClass);
+        // Если уже есть бин, то просто его возвращаем
         if (beanMapByClass.get(beanClass) != null) {
             return beanMapByClass.get(beanClass).getBean();
         }
+
+        // Создаём сам бин
         Constructor constructor = null;
         Object object = null;
         try {
@@ -144,17 +109,33 @@ public class Context {
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             e.printStackTrace();
         }
+
+        // Работа с полями!!!
         Field[] fields = beanClass.getDeclaredFields();
         for (Field field : fields) {
+
+            // Если есть аннотации Inject
             Annotation inject = field.getAnnotation(Inject.class);
             if (inject != null) {
+
+                // Если есть уточнение по имени
                 if (field.isAnnotationPresent(Named.class)) {
+
+                    // Получаем имя, смотрим, пустое ли оно.
+                    // Если пустое, то это ошибка, так как эта аннотация Named не имеет смысла.
+                    // Иначе идём далее
                     String name = field.getAnnotation(Named.class).value();
                     Object diObj;
                     if (!name.isEmpty()) {
+
+                        // Если бин для класса/интерф поля уже существует, то просто его достаём
                         if (beanMapByName.get(name) != null) {
                             diObj = beanMapByName.get(name).getBean();
                         } else {
+
+                            // проверяем, если вообще подходящий класс/интерф поля
+                            // Да -> создаем его бин (шаг вглубь)
+                            // Нет -> ошибка
                             if (classMapByName.get(name) != null) {
                                 diObj = createBean(classMapByName.get(name));
                             } else {
@@ -162,27 +143,46 @@ public class Context {
                                         "\nNo such component with specified id exists!: " + name);
                             }
                         }
+
+                        // Магия: внедрение бина в ПОЛЕ.
                         field.setAccessible(true);
                         try {
                             field.set(object, diObj);
                         } catch (IllegalAccessException e) {
                             e.printStackTrace();
                         }
+                    } else {
+
+                        // Тот самый ненужный пустой Named при Inject
+                        throw new RuntimeException("Misuse of Named annotation in the field: " + field.getName() +
+                                "\nIn the class/interface: " + beanClass);
                     }
                 } else {
+
                     if (field.getType().isInterface()) {
+                        // Если класс у поля интерфейс, то ищем все классы, реализующие этот интерфейс
                         var implementationClasses = new ArrayList<>(scanner.getSubTypesOf(field.getType()));
                         var engagedImplementationClasses = new ArrayList<>(implementationClasses);
                         boolean appropriateImplementationFound = false;
+
+                        // Проверяем для каждой реализации, что она вообще используется (т.е. помечена Named)
+                        // Если не используется, то ёё отбрасываем.
                         for (int i = 0; i < implementationClasses.size(); i++) {
                             if (!implementationClasses.get(i).isAnnotationPresent(Named.class)) {
                                 engagedImplementationClasses.remove(implementationClasses.get(i));
                             }
                         }
+
+                        // Если больше 1 реализации -> неопределённость, ибо нельзя однозначно выбрать реализацию
                         if (engagedImplementationClasses.size() > 1) {
                             throw new RuntimeException("Cannot couple interface: " + beanClass +
                                     "\nThere are several appropriate implementations!");
                         }
+
+                        // Для каждой оставшейся реализации смотрим, что у нее ТАК ЖЕ нет конретного имени в Named,
+                        // Ведь если есть, то мы не можем использовать эту реализацию, так как у нашего искомого поля
+                        // нет конкртеной конкретизации.
+                        // Пытаеся создать бин для подходяший реализации
                         for (int i = 0; i < engagedImplementationClasses.size(); i++) {
                             if (engagedImplementationClasses.get(i).getAnnotation(Named.class).value().equals("")) {
                                 Object diObj = createBean(engagedImplementationClasses.get(i));
@@ -195,11 +195,15 @@ public class Context {
                                 appropriateImplementationFound = true;
                             }
                         }
+
+                        // Если не удалось найти (=> создать) реалзиацию, то это ошибка.
                         if (!appropriateImplementationFound) {
                             throw new RuntimeException("Cannot couple interface: " + beanClass +
                                     "\nThe possible component has its unique ids! Try specify id.");
                         }
                     } else {
+                        // Если не интерфейс, то просто создаём бин для самого класса, если такой класс вообще
+                        // был указан как компонент
                         if (classMapByName.get(defaultName(field.getType())) != null) {
                             Object diObj = createBean(field.getType());
                             field.setAccessible(true);
@@ -209,22 +213,25 @@ public class Context {
                                 e.printStackTrace();
                             }
                         } else {
+                            // Если не был класс указан как компонент => не с чем внедрять (либо в принципе
+                            // нет компонента такого класса, либо компоненты имеют конкретные имена (а наше поле
+                            // нет)) => ошибка.
                             throw new RuntimeException("Cannot couple class/interface: " + beanClass +
-                                    "\nAll possible components have their unique ids! Try specify id.");
+                                    "\nAll possible components have their unique ids! Try specify id." +
+                                    "\nOr there is no such component at all!");
                         }
                     }
                 }
             }
         }
 
+        // Берём имя нашего компонента
         Named beanClassAnnotation = beanClass.getAnnotation(Named.class);
 
-        if (beanClassAnnotation.value().equals("PIPA")) {
-            var a = 4;
-        }
-
+        // Получаем его scope
         Scope scope = defineScope(beanClass);
 
+        // Если имя компонента не указано, то кладём бин по имени и классу, используя дефолтное имя, иначе его истинное
         if (beanClassAnnotation.value().isEmpty()) {
             beanMapByName.put(defaultName(beanClass), new Bean(beanClass, defaultName(beanClass), scope, object));
             //scopeMapByName.put(defaultName(beanClass), scope);
@@ -233,8 +240,6 @@ public class Context {
             beanMapByName.put(beanClassAnnotation.value(), new Bean(beanClass, beanClassAnnotation.value(), scope, object));
             beanMapByClass.put(beanClass, new Bean(beanClass, beanClassAnnotation.value(), scope, object));
         }
-
-        //System.out.println("Leave" + beanClass);
 
         return object;
     }
