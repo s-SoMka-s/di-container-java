@@ -1,21 +1,24 @@
 package implementation;
 
 import implementation.context.Context;
+import implementation.locator.ContextBean;
 
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-public class Bean implements Serializable {
+public class Bean extends ContextBean {
     private Class clazz;
     private String id;
     private Scope scope;
     private Object bean;
     private Constructor constructor;
+    public static Context context;
     //private initParams;
     //private constParams;
 
-    public Bean() {
+    public Bean(Context ctx) {
+        context = ctx;
     }
 
     public Bean(Class clazz, String id, Scope scope, Object bean) {
@@ -54,9 +57,18 @@ public class Bean implements Serializable {
         if (scope.equals(Scope.SINGLETON)) {
             return bean;
         } else {
-            return new Context().createBean(clazz);
+            return context.createBean(clazz);
         }
     }
+
+    public Scope getScope() {
+        return scope;
+    }
+
+    public String getId() {
+        return id;
+    }
+
     /*public Object getBean() {
         if (scope.equals(Scope.SINGLETON)) {
             return bean;

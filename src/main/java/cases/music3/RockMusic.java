@@ -1,12 +1,12 @@
-package cases.music2;
+package cases.music3;
 
-import implementation.annotation.Scope;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Named;
 
-//@Named
+@Component
 @Scope("prototype")
-@Named("rockMusic")
 public class RockMusic implements Music {
     @Override
     public String getSong() {

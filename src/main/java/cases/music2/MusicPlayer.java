@@ -1,9 +1,12 @@
 package cases.music2;
 
+import implementation.annotation.Scope;
+
 import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
+@Scope("prototype")
 public class MusicPlayer {
     @Inject
     @Named("classicalMusic")

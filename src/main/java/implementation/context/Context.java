@@ -23,36 +23,84 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Context {
 
-    private final Configuration configuration;
-    private final Map<Class, Bean> beanMapByClass = new ConcurrentHashMap<>();
-    private final Map<Class, Class<?>> classMapByClass = new ConcurrentHashMap<>();
+    private final Reflections scanner;
+
+    // Список всех компонентов.
     private final Map<String, Class<?>> classMapByName = new ConcurrentHashMap<>();
-    //private final Map<String, Scope> scopeMapByName = new ConcurrentHashMap<>();
-    Set<String> defaultNames = new HashSet<>();
+
+    private final Map<Class, Bean> beanMapByClass = new ConcurrentHashMap<>();
     private final Map<String, Bean> beanMapByName = new ConcurrentHashMap<>();
+    Set<String> defaultNames = new HashSet<>();
+
+    //private final Map<String, Scope> scopeMapByName = new ConcurrentHashMap<>();
+    //private final Map<Class, Class<?>> classMapByClass = new ConcurrentHashMap<>();
 
     // Map: Интерфейс -> конкретный объект класса, реализующего интерфейс.
     // При запросе на получение бина, мы посмотрим в Map, если там уже инициализированный бин для данного интерфейса.
     // Если есть, то мы его вернём. Если нет, то создадим и положим в Map.s
 
-    public Context() {
-        configuration = new JavaConfiguration();
+    public Context(String packageToScan) {
+        scanner = new Reflections(packageToScan);
+        new Bean(this);
         refresh();
     }
 
-    // возвращаем бин по его классу - всё аналогично BeanFactory.
+    // возвращаем бин по его классу в случае, если инъектируемый компонент не имеет конкретного id,
+    // т.е. указан
 
+    /**
+     * Возвращаем бин по его классу в случае, если инъектируемый компонент не имеет конкретного id,
+     * т.е. задан следюущим образом: @Named.
+     *
+     * @param clazz Сам класс
+     * @param <T>   -
+     * @return Бин
+     */
     public <T> T getBean(Class<T> clazz) {
         if (beanMapByClass.containsKey(clazz)) {
-            return (T) beanMapByClass.get(clazz).getBean();
+            if (defaultNames.contains(getDefaultName(clazz))) {
+                if (beanMapByClass.get(clazz).getScope().equals(Scope.SINGLETON)) {
+                    return (T) beanMapByClass.get(clazz).getBean();
+                } else {
+                    return (T) createBean(clazz);
+                }
+            } else {
+                throw new RuntimeException("Cannot get bean for class: " + clazz +
+                        "\nThe possible component has its unique ids! Try specify id.");
+            }
+        } else {
+            throw new RuntimeException("No such bean: " + clazz);
         }
-        throw new RuntimeException("No such bean: " + clazz);
+    }
+
+    /**
+     * Возвращаем бин по его классу в случае, если инъектируемый компонент имеет конкретный id,
+     * т.е. задан следюущим образом: @Named("имя").
+     *
+     * @param clazz Сам класс
+     * @param <T>   -
+     * @return Бин
+     */
+    public <T> T getBean(String name, Class<T> clazz) {
+        if (beanMapByClass.containsKey(clazz)) {
+            if (beanMapByName.containsKey(name)) {
+                if (beanMapByName.get(name).getScope().equals(Scope.SINGLETON)) {
+                    return (T) beanMapByName.get(name).getBean();
+                } else {
+                    return (T) createBean(clazz);
+                }
+            } else {
+                throw new RuntimeException("No such bean with id: " + name);
+            }
+        } else {
+            throw new RuntimeException("No such bean: " + clazz);
+        }
     }
 
     public void refresh() {
-        final Reflections scanner = new Reflections(configuration.getPackageToScan(), new SubTypesScanner(),
+        /*final Reflections scanner = new Reflections(configuration.getPackageToScan(), new SubTypesScanner(),
                 new TypeAnnotationsScanner(),
-                new FieldAnnotationsScanner());
+                new FieldAnnotationsScanner());*/
 
         Set<Class<?>> namedClasses = scanner.getTypesAnnotatedWith(Named.class);
         //Set<Field> injectedFields = scanner.getFieldsAnnotatedWith(Inject.class);
@@ -73,12 +121,11 @@ public class Context {
                     }
                     classMapByName.put(((Named) beanClass.getAnnotation(Named.class)).value(), beanClass);
                 } else {
-                    classMapByName.put(defaultName(beanClass), beanClass);
-                    defaultNames.add(defaultName(beanClass));
+                    classMapByName.put(getDefaultName(beanClass), beanClass);
+                    defaultNames.add(getDefaultName(beanClass));
                 }
             }
         }
-
 
         /**
          * Согласно спецификации, начнём с создания бинов указанных выше компонентов. Будем пытаться внедрять
@@ -92,12 +139,11 @@ public class Context {
     }
 
     public Object createBean(Class<?> beanClass) {
-        JavaConfiguration javaConfiguration = new JavaConfiguration();
-        Reflections scanner = new Reflections(javaConfiguration.getPackageToScan());
-
         // Если уже есть бин, то просто его возвращаем
         if (beanMapByClass.get(beanClass) != null) {
-            return beanMapByClass.get(beanClass).getBean();
+            if (beanMapByClass.get(beanClass).getScope().equals(Scope.SINGLETON)) {
+                return beanMapByClass.get(beanClass).getBean();
+            }
         }
 
         // Создаём сам бин
@@ -144,7 +190,7 @@ public class Context {
                             }
                         }
 
-                        // Магия: внедрение бина в ПОЛЕ.
+                        // Сама инъекция: непосредственное внедрение бина в ПОЛЕ.
                         field.setAccessible(true);
                         try {
                             field.set(object, diObj);
@@ -158,8 +204,8 @@ public class Context {
                                 "\nIn the class/interface: " + beanClass);
                     }
                 } else {
-
                     if (field.getType().isInterface()) {
+
                         // Если класс у поля интерфейс, то ищем все классы, реализующие этот интерфейс
                         var implementationClasses = new ArrayList<>(scanner.getSubTypesOf(field.getType()));
                         var engagedImplementationClasses = new ArrayList<>(implementationClasses);
@@ -204,7 +250,7 @@ public class Context {
                     } else {
                         // Если не интерфейс, то просто создаём бин для самого класса, если такой класс вообще
                         // был указан как компонент
-                        if (classMapByName.get(defaultName(field.getType())) != null) {
+                        if (classMapByName.get(getDefaultName(field.getType())) != null) {
                             Object diObj = createBean(field.getType());
                             field.setAccessible(true);
                             try {
@@ -229,13 +275,12 @@ public class Context {
         Named beanClassAnnotation = beanClass.getAnnotation(Named.class);
 
         // Получаем его scope
-        Scope scope = defineScope(beanClass);
+        Scope scope = getScope(beanClass);
 
         // Если имя компонента не указано, то кладём бин по имени и классу, используя дефолтное имя, иначе его истинное
         if (beanClassAnnotation.value().isEmpty()) {
-            beanMapByName.put(defaultName(beanClass), new Bean(beanClass, defaultName(beanClass), scope, object));
-            //scopeMapByName.put(defaultName(beanClass), scope);
-            beanMapByClass.put(beanClass, new Bean(beanClass, defaultName(beanClass), scope, object));
+            beanMapByName.put(getDefaultName(beanClass), new Bean(beanClass, getDefaultName(beanClass), scope, object));
+            beanMapByClass.put(beanClass, new Bean(beanClass, getDefaultName(beanClass), scope, object));
         } else {
             beanMapByName.put(beanClassAnnotation.value(), new Bean(beanClass, beanClassAnnotation.value(), scope, object));
             beanMapByClass.put(beanClass, new Bean(beanClass, beanClassAnnotation.value(), scope, object));
@@ -244,13 +289,26 @@ public class Context {
         return object;
     }
 
-    private String defaultName(Class clazz) {
+    /**
+     * Получение дефолтного имени путём получения имени класса и замены первой буквы на строчную
+     *
+     * @param clazz Сам класс
+     * @return дефолтное имя объекта класса clazz
+     */
+    private String getDefaultName(Class clazz) {
         var a = clazz.getSimpleName();
         return a.substring(0, 1).toLowerCase() +
                 a.substring(1);
     }
 
-    private Scope defineScope(Class clazz) {
+    /**
+     * Получение скопа класса.
+     * При отсутствии явного задания скопа выставляется Singletone
+     *
+     * @param clazz Сам класс
+     * @return скоп класса
+     */
+    private Scope getScope(Class clazz) {
         if (clazz.isAnnotationPresent(implementation.annotation.Scope.class)) {
             if (((implementation.annotation.Scope) clazz.getAnnotation(implementation.annotation.Scope.class)).value().equals("singleton")) {
                 return Scope.SINGLETON;

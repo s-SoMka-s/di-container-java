@@ -6,18 +6,18 @@ import implementation.context.Context;
 
 public class RunMusic {
     public static void main(String[] args) {
-        //ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("applicationContext.xml");
-        //ClassApplicationContextFromXML context = new ClassApplicationContextFromXML("src/main/resources/applicationContext.xml");
-        //Music music1 = BeanFactory.getInstance().getBean(Music.class);
-        //Music music2 = BeanFactory.getInstance().getBean(Music.class);
+        Context context = new Context("cases.music2");
 
-        //ApplicationContext ctx = Initialization.getApplicationContext();
-        Context context = new Context();
+        MusicPlayer musicPlayer1 = context.getBean(MusicPlayer.class);
+        MusicPlayer musicPlayer2 = context.getBean(MusicPlayer.class);
 
-        Computer computer1 = context.getBean(Computer.class);
-        Computer computer2 = context.getBean(Computer.class);
+        Computer computer1 = context.getBean("PC", Computer.class);
+        Computer computer2 = context.getBean("PC", Computer.class);
         System.out.println(computer1.result());
         System.out.println(computer2.result());
+
+        System.out.println(musicPlayer1);
+        System.out.println(musicPlayer2);
 
         System.out.println(computer1);
         System.out.println(computer2);
