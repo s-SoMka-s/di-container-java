@@ -15,4 +15,5 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.9'
     compile 'org.reflections:reflections:0.9.11'
     implementation 'javax.inject:javax.inject:1'
+    compile group: 'org.codehaus.jackson', name: 'jackson-mapper-asl', version: '1.5.2'
 }
