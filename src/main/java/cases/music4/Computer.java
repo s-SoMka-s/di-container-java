@@ -5,7 +5,7 @@ import implementation.annotation.Scope;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-@Scope("prototype")
+//@Scope("prototype")
 @Named("PC")
 public class Computer {
     @Inject

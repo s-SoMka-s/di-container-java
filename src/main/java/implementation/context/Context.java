@@ -3,30 +3,29 @@ package implementation.context;
 import implementation.Bean;
 import implementation.Scope;
 import implementation.annotation.Value;
-import implementation.configuration.Configuration;
-import implementation.configuration.JavaConfiguration;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.reflections.Reflections;
-import org.reflections.scanners.FieldAnnotationsScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.scanners.TypeAnnotationsScanner;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Context {
 
     private final Reflections scanner;
+    private final String valuesToScan;
+
+    // Контейнер всех переменных из конфиг файла JSON
+    //private static class VariablesJSON {
+    private Map<String, Object> variablesJSON = new ConcurrentHashMap<>();
+    //}
 
     // Список всех компонентов.
     private final Map<String, Class<?>> classMapByName = new ConcurrentHashMap<>();
@@ -43,8 +42,17 @@ public class Context {
     // Если есть, то мы его вернём. Если нет, то создадим и положим в Map.s
 
     public Context(String packageToScan) {
-        scanner = new Reflections(packageToScan);
+        this.scanner = new Reflections(packageToScan);
+        this.valuesToScan = null;
         new Bean(this);
+        refresh();
+    }
+
+    public Context(String packageToScan, String valuesToScan) {
+        this.scanner = new Reflections(packageToScan);
+        this.valuesToScan = valuesToScan;
+        new Bean(this);
+        deserialize();
         refresh();
     }
 
@@ -98,6 +106,20 @@ public class Context {
             }
         } else {
             throw new RuntimeException("No such bean: " + clazz);
+        }
+    }
+
+    public void deserialize() {
+        File file = new File(valuesToScan);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        TypeReference<ConcurrentHashMap<String, Object>> typeRef = new TypeReference<>() {
+        };
+
+        try {
+            variablesJSON = objectMapper.readValue(file, typeRef);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -211,7 +233,7 @@ public class Context {
 
             // Если поле имеет аннотацию Value, то производим внедрение значений
             if (field.isAnnotationPresent(Value.class)) {
-                valueAnnotation(field, object);
+                valueAnnotation(beanClass, field, object);
             }
 
             // Если поле имеет аннотацию Inject, то производим внедрение зависимостей
@@ -337,32 +359,39 @@ public class Context {
         }
     }
 
-    private void valueAnnotation(Field field, Object object) {
-        field.setAccessible(true);
-
+    /**
+     * Производим непосредственное внедрение значений (заточена пока под поле)
+     *
+     * @param beanClass класс бина, которой необходимо создать
+     * @param field     поле, аннотированное Value-м
+     * @param object    будущий инстанс бина
+     */
+    private void valueAnnotation(Class<?> beanClass, Field field, Object object) {
+        String rawValue = field.getAnnotation(Value.class).value();
         ObjectMapper mapper = new ObjectMapper();
+
+        field.setAccessible(true);
         try {
-            field.set(object, mapper.readValue(field.getAnnotation(Value.class).value(), field.getType()));
+            // Если первый символ $, то обращаемся к контейнере значений переменных из конфига.
+            // Иначе внедряем то, что непосредственно указано в параметре Value
+            if (rawValue.charAt(0) == '$') {
+                if (variablesJSON != null) {
+                    if (variablesJSON.containsKey(rawValue.substring(1))) {
+                        field.set(object, variablesJSON.get(rawValue.substring(1)));
+                    } else {
+                        throw new RuntimeException("No such variable id in the config file!" +
+                                "\nVariable id: " + rawValue +
+                                "\nClass: " + beanClass);
+                    }
+                } else {
+                    throw new RuntimeException("No config file specified!");
+                }
+            } else {
+                field.set(object, mapper.readValue(rawValue, field.getType()));
+            }
         } catch (IOException | IllegalAccessException e) {
             e.printStackTrace();
         }
-
-        /*var fieldTypeName = field.getType().getTypeName();
-
-        try {
-            switch (fieldTypeName) {
-                case "int" ->
-                    field.set(object, Integer.parseInt(field.getAnnotation(Value.class).value()));
-                case "String" ->
-                    field.set(object, field.getAnnotation(Value.class).value());
-                default ->
-                    throw new RuntimeException("the Value annotation is assigned to inappropriate type" +
-                            "\nIn the field: " + field +
-                            "\nIn the class: " + beanClass);
-            }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }*/
     }
 
     /**

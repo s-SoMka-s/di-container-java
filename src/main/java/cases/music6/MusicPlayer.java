@@ -10,8 +10,12 @@ import javax.inject.Named;
 @Scope("prototype")
 public class MusicPlayer {
 
-    @Value("73")
+    @Value("$volume")
+    //@Value("43")
     private int volume;
+
+    @Value("[\"a\", \"bc\", \"def\"]")
+    private String[] array;
 
     @Inject
     @Named("classicalMusic")
@@ -28,4 +32,6 @@ public class MusicPlayer {
     public int getVolume() {
         return volume;
     }
+
+    public String[] getArray() {return array;}
 }

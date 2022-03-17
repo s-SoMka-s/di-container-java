@@ -6,7 +6,7 @@ import implementation.context.Context;
 
 public class RunMusic {
     public static void main(String[] args) {
-        Context context = new Context("cases.music6");
+        Context context = new Context("cases.music6", "src/main/resources/valuesConfig.json");
 
         MusicPlayer musicPlayer1 = context.getBean(MusicPlayer.class);
         MusicPlayer musicPlayer2 = context.getBean(MusicPlayer.class);
@@ -21,5 +21,8 @@ public class RunMusic {
 
         System.out.println(computer1);
         System.out.println(computer2);
+
+        System.out.println(musicPlayer1.getVolume());
+        System.out.println(computer1.getName());
     }
 }
