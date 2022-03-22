@@ -29,6 +29,17 @@ public class MusicPlayer {
         return "Playing: " + classicalMusic.getSong() + ", " + rockMusic.getSong();
     }
 
+    private HeadPhones headPhones;
+
+    @Inject
+    public MusicPlayer(HeadPhones headPhones) {
+        this.headPhones = headPhones;
+    }
+
+    public void getModel() {
+        this.headPhones.getModel();
+    }
+
     public int getVolume() {
         return volume;
     }

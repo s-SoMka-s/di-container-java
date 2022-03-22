@@ -3,6 +3,7 @@ package implementation.context;
 import implementation.Bean;
 import implementation.Scope;
 import implementation.annotation.Value;
+import lombok.SneakyThrows;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.reflections.Reflections;
@@ -16,6 +17,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class Context {
 
@@ -69,19 +72,16 @@ public class Context {
      */
     public <T> T getBean(Class<T> clazz) {
         if (beanMapByClass.containsKey(clazz)) {
-            if (defaultNames.contains(getDefaultName(clazz))) {
-                if (beanMapByClass.get(clazz).getScope().equals(Scope.SINGLETON)) {
-                    return (T) beanMapByClass.get(clazz).getBean();
-                } else {
-                    return (T) createBean(clazz);
-                }
-            } else {
-                throw new RuntimeException("Cannot get bean for class: " + clazz +
-                        "\nThe possible component has its unique ids! Try specify id.");
-            }
-        } else {
             throw new RuntimeException("No such bean: " + clazz);
         }
+
+        if (defaultNames.contains(getDefaultName(clazz))) {
+            throw new RuntimeException("Cannot get bean for class: " + clazz +
+                    "\nThe possible component has its unique ids! Try specify id.");
+        }
+
+        var bean = beanMapByClass.get(clazz);
+        return getByScope(bean, clazz);
     }
 
     /**
@@ -93,20 +93,24 @@ public class Context {
      * @return Бин
      */
     public <T> T getBean(String name, Class<T> clazz) {
-        if (beanMapByClass.containsKey(clazz)) {
-            if (beanMapByName.containsKey(name)) {
-                if (beanMapByName.get(name).getScope().equals(Scope.SINGLETON) ||
-                        beanMapByName.get(name).getScope().equals(Scope.THREAD)) {
-                    return (T) beanMapByName.get(name).getBean();
-                } else {
-                    return (T) createBean(clazz);
-                }
-            } else {
-                throw new RuntimeException("No such bean with id: " + name);
-            }
-        } else {
+        if (!beanMapByClass.containsKey(clazz)) {
             throw new RuntimeException("No such bean: " + clazz);
         }
+
+        if (beanMapByName.containsKey(name)) {
+            throw new RuntimeException("No such bean with id: " + name);
+        }
+
+        var bean = beanMapByName.get(name);
+        return getByScope(bean, clazz);
+    }
+
+    private <T> T getByScope(Bean bean, Class<T> clazz) {
+        var scope = bean.getScope();
+        return switch (scope) {
+            case SINGLETON, THREAD -> (T) bean.getBean();
+            case PROTOTYPE -> (T) createBean(clazz);
+        };
     }
 
     public void deserialize() {
@@ -138,19 +142,22 @@ public class Context {
          * имя, равное имени класса, т.е. будет уникальным, и отмечаем, что это имя дефолтное.
          */
         for (Class beanClass : namedClasses) {
-            if (!beanClass.isAnnotationPresent(Inject.class)) {
-                if (!((Named) beanClass.getAnnotation(Named.class)).value().equals("")) {
-                    if (classMapByName.get(((Named) beanClass.getAnnotation(Named.class)).value()) != null) {
-                        throw new RuntimeException("Cannot couple class/interface" +
-                                "\nMultiple use of the same ID: " +
-                                ((Named) beanClass.getAnnotation(Named.class)).value());
-                    }
-                    classMapByName.put(((Named) beanClass.getAnnotation(Named.class)).value(), beanClass);
-                } else {
-                    classMapByName.put(getDefaultName(beanClass), beanClass);
-                    defaultNames.add(getDefaultName(beanClass));
-                }
+            if (beanClass.isAnnotationPresent(Inject.class)) {
+                continue;
             }
+
+            var name = ((Named)beanClass.getAnnotation(Named.class)).value();
+            if (name.isEmpty()) {
+                name = getDefaultName(beanClass);
+                defaultNames.add(name);
+            }
+
+            if (classMapByName.get(name) != null) {
+                throw new RuntimeException("Cannot couple class/interface" +
+                        "\nMultiple use of the same ID: " + name);
+            }
+
+            classMapByName.put(name, beanClass);
         }
 
         /**
@@ -159,8 +166,8 @@ public class Context {
          * (возможен уход внутрь по рекурсии, чтобы атомарные компоненты были сперва определены)
          */
         // TODO Ниже всё идет реализация под поля! Нужно интгрировать аккуратно для сеттеров и конструкторов
-        for (int i = 0; i < namedClasses.size(); i++) {
-            createBean((Class<?>) namedClasses.toArray()[i]);
+        for (var item : namedClasses) {
+            createBean(item);
         }
     }
 
@@ -172,32 +179,29 @@ public class Context {
      * @return инстанс бина
      */
     public Object createBean(Class<?> beanClass) {
-        // Если уже есть бин, то просто его возвращаем (речь идёт только про синглтон тип!)
-        if (beanMapByClass.get(beanClass) != null) {
-            if (beanMapByClass.get(beanClass).getScope().equals(Scope.SINGLETON)) {
-                return beanMapByClass.get(beanClass).getBean();
+        var existed = beanMapByClass.get(beanClass);
+        var scope = getScope(beanClass);
+
+        if (existed != null) {
+            if (scope.equals(Scope.SINGLETON)) {
+                return existed.getBean();
             }
         }
 
-        // Создаём новый инстанс бина
-        Object object = createInstance(beanClass);
+        var instance = createInstance(beanClass);
 
         // Берём имя нашего компонента
-        Named beanClassAnnotation = beanClass.getAnnotation(Named.class);
-
-        // Получаем его scope
-        Scope scope = getScope(beanClass);
+        var name = beanClass.getAnnotation(Named.class).value();
 
         // Если имя компонента не указано, то кладём бин по имени и классу, используя дефолтное имя, иначе его истинное
-        if (beanClassAnnotation.value().isEmpty()) {
-            beanMapByName.put(getDefaultName(beanClass), new Bean(beanClass, getDefaultName(beanClass), scope, object));
-            beanMapByClass.put(beanClass, new Bean(beanClass, getDefaultName(beanClass), scope, object));
-        } else {
-            beanMapByName.put(beanClassAnnotation.value(), new Bean(beanClass, beanClassAnnotation.value(), scope, object));
-            beanMapByClass.put(beanClass, new Bean(beanClass, beanClassAnnotation.value(), scope, object));
+        if (name.isEmpty()) {
+            name = getDefaultName(beanClass);
         }
 
-        return object;
+        beanMapByName.put(name, new Bean(beanClass, name, scope, instance));
+        beanMapByClass.put(beanClass, new Bean(beanClass, name, scope, instance));
+
+        return instance;
     }
 
     /**
@@ -209,6 +213,7 @@ public class Context {
      * @param beanClass класс, инстанс бина которого нужно получить
      * @return объект класса beanClass
      */
+    @SneakyThrows
     public Object createInstance(Class<?> beanClass) {
         // Создаём сам бин
         Constructor constructor = null;
@@ -242,7 +247,13 @@ public class Context {
             }
         }
 
+        var constructors = Arrays.stream(beanClass.getConstructors()).filter(c -> c.isAnnotationPresent(Inject.class)).collect(Collectors.toList());
+
         return object;
+    }
+
+    private boolean onlyInjectAnnotatedPredicate(Constructor<?> constructor) {
+        return constructor.isAnnotationPresent(Inject.class);
     }
 
     /**

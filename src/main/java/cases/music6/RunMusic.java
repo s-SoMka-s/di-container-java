@@ -1,6 +1,8 @@
 package cases.music6;
 
 import implementation.context.Context;
+
+
 //import org.springframework.context.ApplicationContext;
 
 
@@ -9,6 +11,9 @@ public class RunMusic {
         Context context = new Context("cases.music6", "src/main/resources/valuesConfig.json");
 
         MusicPlayer musicPlayer1 = context.getBean(MusicPlayer.class);
+
+        musicPlayer1.getModel();
+
         MusicPlayer musicPlayer2 = context.getBean(MusicPlayer.class);
 
         Computer computer1 = context.getBean("PC", Computer.class);
