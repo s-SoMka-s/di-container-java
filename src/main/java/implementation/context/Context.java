@@ -146,7 +146,7 @@ public class Context {
                 continue;
             }
 
-            var name = ((Named)beanClass.getAnnotation(Named.class)).value();
+            var name = ((Named) beanClass.getAnnotation(Named.class)).value();
             if (name.isEmpty()) {
                 name = getDefaultName(beanClass);
                 defaultNames.add(name);
@@ -272,36 +272,34 @@ public class Context {
             // Иначе идём далее
             String name = field.getAnnotation(Named.class).value();
             Object diObj;
-            if (!name.isEmpty()) {
 
-                // Если бин для класса/интерф поля уже существует, то просто его достаём
-                if (beanMapByName.get(name) != null) {
-                    diObj = beanMapByName.get(name).getBean();
-                } else {
-
-                    // проверяем, если вообще подходящий класс/интерф поля
-                    // Да -> создаем его бин (шаг вглубь)
-                    // Нет -> ошибка
-                    if (classMapByName.get(name) != null) {
-                        diObj = createBean(classMapByName.get(name));
-                    } else {
-                        throw new RuntimeException("Cannot couple class/interface: " + beanClass +
-                                "\nNo such component with specified id exists!: " + name);
-                    }
-                }
-
-                // Сама инъекция: непосредственное внедрение бина в ПОЛЕ.
-                field.setAccessible(true);
-                try {
-                    field.set(object, diObj);
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            } else {
-
-                // Тот самый ненужный пустой Named при Inject
+            if (name.isEmpty()) {
                 throw new RuntimeException("Misuse of Named annotation in the field: " + field.getName() +
                         "\nIn the class/interface: " + beanClass);
+            }
+
+            // Если бин для класса/интерф поля уже существует, то просто его достаём
+            if (beanMapByName.get(name) != null) {
+                diObj = beanMapByName.get(name).getBean();
+            } else {
+
+                // проверяем, если вообще подходящий класс/интерф поля
+                // Да -> создаем его бин (шаг вглубь)
+                // Нет -> ошибка
+                if (classMapByName.get(name) != null) {
+                    diObj = createBean(classMapByName.get(name));
+                } else {
+                    throw new RuntimeException("Cannot couple class/interface: " + beanClass +
+                            "\nNo such component with specified id exists!: " + name);
+                }
+            }
+
+            // Сама инъекция: непосредственное внедрение бина в ПОЛЕ.
+            field.setAccessible(true);
+            try {
+                field.set(object, diObj);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
             }
         } else {
             if (field.getType().isInterface()) {
@@ -350,21 +348,21 @@ public class Context {
             } else {
                 // Если не интерфейс, то просто создаём бин для самого класса, если такой класс вообще
                 // был указан как компонент
-                if (classMapByName.get(getDefaultName(field.getType())) != null) {
-                    Object diObj = createBean(field.getType());
-                    field.setAccessible(true);
-                    try {
-                        field.set(object, diObj);
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
-                } else {
+                if (classMapByName.get(getDefaultName(field.getType())) == null) {
                     // Если не был класс указан как компонент => не с чем внедрять (либо в принципе
                     // нет компонента такого класса, либо компоненты имеют конкретные имена (а наше поле
                     // нет)) => ошибка.
                     throw new RuntimeException("Cannot couple class/interface: " + beanClass +
                             "\nAll possible components have their unique ids! Try specify id." +
                             "\nOr there is no such component at all!");
+                }
+
+                Object diObj = createBean(field.getType());
+                field.setAccessible(true);
+                try {
+                    field.set(object, diObj);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
                 }
             }
         }
