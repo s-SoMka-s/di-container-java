@@ -2,7 +2,7 @@ package cases.server;
 
 import cases.server.controllers.MailController;
 import cases.server.controllers.UsersController;
-import implementation.context.NewContext;
+import framework.context.NewContext;
 
 public class Server {
     public static void main (String[] args) {

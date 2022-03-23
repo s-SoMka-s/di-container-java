@@ -1,7 +1,6 @@
-package implementation.locator;
+package framework.locator;
 
 import java.util.ArrayList;
-import java.util.Set;
 
 /**
  * Реализация BeanConfigurator на XML.

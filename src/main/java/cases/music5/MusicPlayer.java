@@ -1,6 +1,6 @@
 package cases.music5;
 
-import implementation.annotation.Scope;
+import framework.annotation.Scope;
 
 import javax.inject.Inject;
 import javax.inject.Named;

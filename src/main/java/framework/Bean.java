@@ -1,12 +1,9 @@
-package implementation;
+package framework;
 
-import implementation.context.Context;
-import implementation.locator.ContextBean;
+import framework.context.Context;
+import framework.locator.ContextBean;
 import org.springframework.beans.factory.support.ManagedMap;
 
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 public class Bean extends ContextBean {

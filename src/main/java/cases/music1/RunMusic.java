@@ -1,6 +1,6 @@
 package cases.music1;
 
-import implementation.context.Context;
+import framework.context.Context;
 //import org.springframework.context.ApplicationContext;
 
 public class RunMusic {

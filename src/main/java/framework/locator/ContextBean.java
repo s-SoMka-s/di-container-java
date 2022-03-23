@@ -1,6 +1,6 @@
-package implementation.locator;
+package framework.locator;
 
-import implementation.context.Context;
+import framework.context.Context;
 
 public class ContextBean {
     static Context context;

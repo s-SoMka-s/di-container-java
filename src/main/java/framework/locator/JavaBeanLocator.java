@@ -1,23 +1,29 @@
-package implementation.locator;
+package framework.locator;
 
 import org.reflections.Reflections;
 
+import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class JavaBeanLocator2 {
+/**
+ * Реализация BeanConfigurator полностью на Java.
+ */
+public class JavaBeanLocator implements BeanLocator {
+
     private final Reflections scanner;
 
     // Необязательно мы должны искать реализации в коде: у нас может быть Map, в котором может быть соответ свзязь
     private final Map<Class, Class> interfaceToImplementation;
 
-    public JavaBeanLocator2(String packageToScan, Map<Class, Class> interfaceToImplementation) {
+    public JavaBeanLocator(String packageToScan, Map<Class, Class> interfaceToImplementation) {
         this.scanner = new Reflections(packageToScan);
         this.interfaceToImplementation = new ConcurrentHashMap<>(interfaceToImplementation);
     }
 
+    @Override
     // Будем пополнять наш Map по ходу поиска реализации интерфейсов в коде, чтобы потом можно было быстро получить
     // доступ к реализации интерфейса (для ко-то уже находили реализацию).
     public <T> ArrayList<Class<? extends T>> getImplementationClass(Class<T> interfaceClass) {
@@ -27,6 +33,8 @@ public class JavaBeanLocator2 {
             return arrayList;
         } else {
             Set<Class<? extends T>> implementationClasses = scanner.getSubTypesOf(interfaceClass);
+            Set<Class<?>> namedClasses = scanner.getTypesAnnotatedWith(Named.class);
+            var a = 5;
 
             // если реализация интерфейса не одна, то ВРЕМЕННО кидаем исключение.
             // если реализаций интерфейса ноль, то кидаем соответ. исключение.

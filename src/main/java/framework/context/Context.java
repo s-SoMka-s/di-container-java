@@ -1,8 +1,8 @@
-package implementation.context;
+package framework.context;
 
-import implementation.Bean;
-import implementation.Scope;
-import implementation.annotation.Value;
+import framework.Bean;
+import framework.Scope;
+import framework.annotation.Value;
 import lombok.SneakyThrows;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -17,7 +17,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class Context {
@@ -423,14 +422,14 @@ public class Context {
      * @return скоп класса
      */
     private Scope getScope(Class clazz) {
-        if (clazz.isAnnotationPresent(implementation.annotation.Scope.class)) {
-            if (((implementation.annotation.Scope) clazz.getAnnotation(implementation.annotation.Scope.class)).value().equals("singleton")) {
+        if (clazz.isAnnotationPresent(framework.annotation.Scope.class)) {
+            if (((framework.annotation.Scope) clazz.getAnnotation(framework.annotation.Scope.class)).value().equals("singleton")) {
                 return Scope.SINGLETON;
             }
-            if (((implementation.annotation.Scope) clazz.getAnnotation(implementation.annotation.Scope.class)).value().equals("thread")) {
+            if (((framework.annotation.Scope) clazz.getAnnotation(framework.annotation.Scope.class)).value().equals("thread")) {
                 return Scope.THREAD;
             }
-            if (((implementation.annotation.Scope) clazz.getAnnotation(implementation.annotation.Scope.class)).value().equals("prototype")) {
+            if (((framework.annotation.Scope) clazz.getAnnotation(framework.annotation.Scope.class)).value().equals("prototype")) {
                 return Scope.PROTOTYPE;
             }
             throw new RuntimeException("Specified scope does not exist in class: " + clazz);
