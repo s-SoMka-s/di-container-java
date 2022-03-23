@@ -9,6 +9,7 @@ import framework.extensions.NameExtensions;
 import framework.extensions.ScopeExtensions;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -21,7 +22,7 @@ public class BeanFactory {
     }
 
     public Bean createBean(Class<?> item) throws IncorrectFieldAnnotationsException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
-        var name = NameExtensions.getName(item);
+        var name = NameExtensions.getComponentName(item);
         var scope = ScopeExtensions.getScope(item);
 
         var instance = createInstance(item);

@@ -1,6 +1,6 @@
 package framework.injector;
 
-import framework.annotations.Inject;
+import framework.annotations.Component;
 import framework.annotations.Value;
 import framework.context.NewContext;
 import framework.exceptions.IncorrectFieldAnnotationsException;
@@ -60,14 +60,17 @@ public class Injector {
         var beans = this.context.getBeanStore();
         var beanFactory = this.context.getBeanFactory();
 
-        var name = field.getDeclaredAnnotation(Inject.class).value();
-        if (name.isBlank() || name.isEmpty()){
-            name = NameExtensions.getDefaultName(field.getType());
-        }
+        var name = NameExtensions.getInjectableFieldName(field);
 
         var bean = beans.get(name);
         if (bean == null) {
-            bean = beanFactory.createBean(field.getType());
+            if (!field.getType().isAnnotationPresent(Component.class)) {
+                var waiterName = NameExtensions.getComponentName(beanClass);
+                beans.addDeferred(waiterName, name);
+                return;
+            }
+
+            bean = beanFactory.createBean(field.getDeclaringClass());
             beans.add(bean);
         }
 

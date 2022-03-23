@@ -8,7 +8,7 @@ import framework.annotations.Scope;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component()
+@Component
 @Scope(framework.enums.Scope.SINGLETON)
 public class DbContext {
     private List<User> users = new ArrayList();

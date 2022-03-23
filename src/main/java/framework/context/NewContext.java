@@ -56,7 +56,7 @@ public class NewContext {
     }
 
     public <T> T getType(Class<T> type) {
-        var name = NameExtensions.getName(type);
+        var name = NameExtensions.getComponentName(type);
 
         return (T)this.beanStore.get(name).getBean();
     }

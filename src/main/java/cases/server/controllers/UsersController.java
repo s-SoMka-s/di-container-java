@@ -7,7 +7,7 @@ import framework.annotations.Inject;
 
 @Component
 public class UsersController {
-    @Inject
+    @Inject("usersRepository")
     private Repository<User> users;
 
     public void addUser(String name) {

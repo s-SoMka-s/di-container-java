@@ -8,7 +8,7 @@ import framework.annotations.Inject;
 
 import java.util.List;
 
-@Component("users")
+@Component("usersRepository")
 public class UsersRepository implements Repository<User> {
     @Inject
     private DbContext dbContext;

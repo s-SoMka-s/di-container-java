@@ -4,10 +4,12 @@ import java.util.HashMap;
 
 public class BeanStore {
     private final HashMap<String, Bean> beans;
+    private final HashMap<String, String> deferredBeans;
     public Object get;
 
     public BeanStore(){
         this.beans = new HashMap<>();
+        deferredBeans = new HashMap<>();
     }
 
     public void add(Bean bean) {
@@ -21,5 +23,9 @@ public class BeanStore {
         }
 
         return beans.get(name);
+    }
+
+    public void addDeferred(String waiter, String beanName) {
+        deferredBeans.put(waiter, beanName);
     }
 }
