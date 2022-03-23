@@ -1,5 +1,6 @@
-package framework;
+package framework.beans;
 
+import framework.enums.Scope;
 import framework.context.Context;
 import framework.locator.ContextBean;
 import org.springframework.beans.factory.support.ManagedMap;
@@ -10,7 +11,7 @@ public class Bean extends ContextBean {
     public static Context context;
 
     private Class clazz;
-    private String id;
+    private String name;
     private Scope scope;
     private Object bean;
     private HashMap<Long, Object> threadBeans;
@@ -21,9 +22,9 @@ public class Bean extends ContextBean {
         context = ctx;
     }
 
-    public Bean(Class clazz, String id, Scope scope, Object bean) {
+    public Bean(Class clazz, String name, Scope scope, Object bean) {
         this.clazz = clazz;
-        this.id = id;
+        this.name = name;
         this.bean = bean;
         this.scope = scope;
         threadBeans = new ManagedMap<>();
@@ -54,7 +55,7 @@ public class Bean extends ContextBean {
         return scope;
     }
 
-    public String getId() {
-        return id;
+    public String getName() {
+        return name;
     }
 }
