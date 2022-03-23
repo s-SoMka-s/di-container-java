@@ -6,7 +6,7 @@ import framework.annotations.Value;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-@Scope("prototype")
+@Scope(framework.enums.Scope.PROTOTYPE)
 @Named("PC")
 public class Computer {
     //@Value("Macbook Air 13")

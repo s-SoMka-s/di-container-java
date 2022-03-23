@@ -2,18 +2,26 @@ package cases.server;
 
 import cases.server.controllers.MailController;
 import cases.server.controllers.UsersController;
+import cases.server.servicies.implementations.GoogleMailService;
+import framework.context.ContextBuilder;
 import framework.context.NewContext;
+import framework.exceptions.IncorrectFieldAnnotationsException;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 public class Server {
-    public static void main (String[] args) {
-        NewContext.Start(Server.class);
+    public static void main (String[] args) throws IncorrectFieldAnnotationsException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
+        var builder = new ContextBuilder();
 
-        var mailer = NewContext.getType(MailController.class);
-        mailer.sendGoogleMail();
-        mailer.sendYandexMail();
-        mailer.printAllMails();
+        var context = builder.Build();
 
-        var userController = NewContext.getType(UsersController.class);
+        context.Run(Server.class);
+
+        var mailer = context.getType(GoogleMailService.class);
+        mailer.sendMail();
+
+        var userController = context.getType(UsersController.class);
         userController.addUser("Nick");
         userController.addUser("Tom");
         userController.allSayHi();

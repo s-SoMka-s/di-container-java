@@ -2,12 +2,14 @@ package cases.server.db;
 
 import cases.server.entitiies.Mail;
 import cases.server.entitiies.User;
+import framework.annotations.Component;
 import framework.annotations.Scope;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Scope("singleton")
+@Component()
+@Scope(framework.enums.Scope.SINGLETON)
 public class DbContext {
     private List<User> users = new ArrayList();
     private List<Mail> mails = new ArrayList();

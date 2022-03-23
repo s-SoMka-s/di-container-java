@@ -2,9 +2,10 @@ package cases.server.controllers;
 
 import cases.server.db.interfaces.Repository;
 import cases.server.entitiies.User;
+import framework.annotations.Component;
+import framework.annotations.Inject;
 
-import javax.inject.Inject;
-
+@Component
 public class UsersController {
     @Inject
     private Repository<User> users;
@@ -14,6 +15,6 @@ public class UsersController {
     }
 
     public void allSayHi(){
-        users.getAll().forEach(u -> u.sayHi());
+        users.getAll().forEach(User::sayHi);
     }
 }

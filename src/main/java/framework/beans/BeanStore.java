@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 public class BeanStore {
     private final HashMap<String, Bean> beans;
+    public Object get;
 
     public BeanStore(){
         this.beans = new HashMap<>();

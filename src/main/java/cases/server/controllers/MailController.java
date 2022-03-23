@@ -4,7 +4,9 @@ import cases.server.db.interfaces.Repository;
 import cases.server.entitiies.Mail;
 import cases.server.servicies.interfaces.MailService;
 import framework.annotations.Autowired;
+import framework.annotations.Component;
 
+@Component
 public class MailController {
     private final MailService googleMailer;
     private final MailService yandexMailer;

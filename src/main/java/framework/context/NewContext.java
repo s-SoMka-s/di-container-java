@@ -1,51 +1,76 @@
 package framework.context;
 
+import framework.annotations.Component;
+import framework.beans.BeanFactory;
+import framework.beans.BeanStore;
+import framework.config.Configuration;
+import framework.exceptions.IncorrectFieldAnnotationsException;
+import framework.extensions.NameExtensions;
+import framework.injector.Injector;
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 public class NewContext {
+    private final BeanFactory beanFactory;
+    private final BeanStore beanStore;
+    private final Injector injector;
 
-    private final String valuesToScan;
+    private Configuration configuration;
 
-    private static NewContext context;
 
-    private NewContext(@Nullable String valuesToScan) {
-        this.valuesToScan = valuesToScan;
-
+    public NewContext() {
+        this.beanStore = new BeanStore();
+        this.beanFactory = new BeanFactory(this);
+        this.injector = new Injector(this);
+        this.configuration = null;
     }
 
-    public static void Start(Class<?> mainClass) {
-        Start(mainClass, null);
-    }
-
-    public static void Start(Class<?> mainClass, @Nullable String valuesToScan) {
-        if (context == null) {
-            context = new NewContext(valuesToScan);
-            context.Run(mainClass);
+    public void setConfiguration(@Nullable String path) {
+        if (path != null){
+            this.configuration = new Configuration(path);
         }
     }
 
-    public static <T> T getType(Class<T> clazz) {
-        return null;
+    public NewContext getContext() {
+        return this;
     }
 
-    @SneakyThrows
-    private void Run(Class<?> mainClass) {
-        var module = mainClass.getModule();
-        var packs = module.getPackages();
+    public Configuration getCurrentConfiguration() {
+        return this.configuration;
+    }
+
+    public BeanFactory getBeanFactory() {
+        return this.beanFactory;
+    }
+
+    public BeanStore getBeanStore() {
+        return this.beanStore;
+    }
+
+    public Injector getInjector() {
+        return this.injector;
+    }
+
+    public <T> T getType(Class<T> type) {
+        var name = NameExtensions.getName(type);
+
+        return (T)this.beanStore.get(name).getBean();
+    }
+
+    public void Run(Class<?> mainClass) throws IncorrectFieldAnnotationsException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
         var packageToScan = mainClass.getPackageName();
 
-        var scanner = new Reflections(packageToScan, new SubTypesScanner(false));
-        var types = scanner.getAllTypes().stream().collect(Collectors.toList());
-        var classes = getClasses(types, module);
-    }
+        var scanner = new Reflections(packageToScan);
 
-    private List<Class<?>> getClasses(List<String> names, Module module) {
-        return names.stream().map(n -> Class.forName(module, n)).collect(Collectors.toList());
+        var components = scanner.getTypesAnnotatedWith(Component.class);
+
+        for (var component : components) {
+            var bean = this.beanFactory.createBean(component);
+            beanStore.add(bean);
+        }
     }
 }

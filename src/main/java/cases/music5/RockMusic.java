@@ -5,7 +5,7 @@ import framework.annotations.Scope;
 import javax.inject.Named;
 
 //@Named
-@Scope("thread")
+@Scope(framework.enums.Scope.THREAD)
 @Named("rockMusic")
 public class RockMusic implements Music {
     @Override

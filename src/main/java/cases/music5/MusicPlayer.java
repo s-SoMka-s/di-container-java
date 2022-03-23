@@ -6,7 +6,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-@Scope("prototype")
+@Scope(framework.enums.Scope.PROTOTYPE)
 public class MusicPlayer {
     @Inject
     @Named("classicalMusic")
