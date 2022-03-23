@@ -1,15 +1,23 @@
 package framework.injector;
 
+import framework.annotations.Autowired;
 import framework.annotations.Component;
+import framework.annotations.Inject;
 import framework.annotations.Value;
 import framework.context.NewContext;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.NameExtensions;
+import framework.extensions.ParameterExtensions;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class Injector {
     private final NewContext context;
@@ -47,6 +55,89 @@ public class Injector {
         }
 
         field.set(object, value);
+    }
+
+    public Object injectIntoConstructor(Constructor constructor) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
+        var parameters = constructor.getParameters();
+        // Конструктор без параметров
+        if (parameters.length == 0) {
+            return constructor.newInstance();
+        }
+
+        var mapper = new ObjectMapper();
+
+        // Все параметры Value-annotated
+        if (ParameterExtensions.isOnlyValueAnnotated(parameters)) {
+            var args = new ArrayList();
+            for (var parameter : parameters) {
+                var rawValue = parameter.getAnnotation(Value.class).value();
+                var type = parameter.getType();
+                var casted = mapper.readValue(rawValue, type);
+                args.add(casted);
+            }
+
+            return constructor.newInstance(args.toArray());
+        }
+
+        var beans = this.context.getBeanStore();
+        var scanner = this.context.getScanner();
+
+        // Конструктор помечен Autowired
+        if (constructor.isAnnotationPresent(Autowired.class)) {
+            var args = new Object[parameters.length];
+            for (var parameter : parameters) {
+                if (parameter.isAnnotationPresent(Value.class)) {
+                    var rawValue = parameter.getAnnotation(Value.class).value();
+                    var type = parameter.getType();
+                    var casted = mapper.readValue(rawValue, type);
+                    var index = Integer.parseInt(parameter.getName().replace("arg", ""));
+
+                    args[index] =  casted;
+                    continue;
+                }
+
+                if (parameter.isAnnotationPresent(Inject.class)) {
+                    var name = NameExtensions.getInjectableParameterName(parameter);
+
+                    var type = parameter.getType();
+                    var typeName = NameExtensions.getDefaultName(type);
+
+                    // интерфейс без явной связи
+                    if (type.isInterface() && typeName.equals(name)) {
+                        // TODO найти кого-то, кто реализует этот интерфейс и вфигачить его в параметр
+                        var implementations = new ArrayList<Class<?>>(scanner.getSubTypesOf(type));
+                        if (implementations.isEmpty()) {
+                            throw new RuntimeException("No implementations for type" + type);
+                        }
+
+                        for (var impl : implementations) {
+                            var implName = NameExtensions.getComponentName(impl);
+                            var bean = beans.get(implName);
+                            if (bean != null) {
+
+                            }
+                        }
+
+                    }
+
+                    var index = Integer.parseInt(parameter.getName().replace("arg", ""));
+
+                    var bean = beans.get(name);
+                    if (bean == null) {
+                        // add deferred;
+                        args[index] = null;
+                        continue;
+                    }
+
+                    args[index] = bean.getBean();
+                    continue;
+                }
+            }
+
+            return constructor.newInstance(args);
+        }
+
+        return constructor.newInstance();
     }
 
     /**

@@ -13,6 +13,7 @@ import org.reflections.Reflections;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 
 public class NewContext {
     private final BeanFactory beanFactory;
@@ -20,6 +21,7 @@ public class NewContext {
     private final Injector injector;
 
     private Configuration configuration;
+    private Reflections scanner;
 
 
     public NewContext() {
@@ -55,6 +57,10 @@ public class NewContext {
         return this.injector;
     }
 
+    public Reflections getScanner() {
+        return this.scanner;
+    }
+
     public <T> T getType(Class<T> type) {
         var name = NameExtensions.getComponentName(type);
 
@@ -64,7 +70,7 @@ public class NewContext {
     public void Run(Class<?> mainClass) throws IncorrectFieldAnnotationsException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
         var packageToScan = mainClass.getPackageName();
 
-        var scanner = new Reflections(packageToScan);
+        this.scanner = new Reflections(packageToScan);
 
         var components = scanner.getTypesAnnotatedWith(Component.class);
 

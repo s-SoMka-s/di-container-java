@@ -10,6 +10,11 @@ public class GoogleMailService implements MailService {
     @Value("5")
     private int Delay;
 
+    public GoogleMailService(@Value("5") int delay) {
+        this.Delay = delay;
+    }
+
+
     @Override
     public void sendMail() {
         System.out.println("Send mail by google mailer");

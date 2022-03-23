@@ -4,12 +4,22 @@ import framework.annotations.Component;
 import framework.annotations.Inject;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Parameter;
 
 public class NameExtensions {
     public static String getInjectableFieldName(Field field) {
         var name = field.getAnnotation(Inject.class).value();
         if (name.isEmpty() || name.isBlank()) {
             return getDefaultName(field.getType());
+        }
+
+        return name;
+    }
+
+    public static String getInjectableParameterName(Parameter parameter) {
+        var name = parameter.getAnnotation(Inject.class).value();
+        if (name.isEmpty() || name.isBlank()) {
+            return getDefaultName(parameter.getType());
         }
 
         return name;

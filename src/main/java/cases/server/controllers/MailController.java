@@ -5,6 +5,8 @@ import cases.server.entitiies.Mail;
 import cases.server.servicies.interfaces.MailService;
 import framework.annotations.Autowired;
 import framework.annotations.Component;
+import framework.annotations.Inject;
+import framework.annotations.Value;
 
 @Component
 public class MailController {
@@ -13,7 +15,7 @@ public class MailController {
     private final Repository<Mail> mails;
 
     @Autowired
-    public MailController(MailService googleMailer, MailService yandexMailer, Repository<Mail> mails) {
+    public MailController(@Value("5") int delay, @Inject MailService googleMailer, MailService yandexMailer, Repository<Mail> mails) {
         this.googleMailer = googleMailer;
         this.yandexMailer = yandexMailer;
         this.mails = mails;

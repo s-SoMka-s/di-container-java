@@ -6,6 +6,7 @@ import framework.context.NewContext;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.FieldExtensions;
 import framework.extensions.NameExtensions;
+import framework.extensions.ParameterExtensions;
 import framework.extensions.ScopeExtensions;
 
 import java.io.IOException;
@@ -21,6 +22,11 @@ public class BeanFactory {
         this.context = context;
     }
 
+    public void createBeanFromComponent(Class<?> component) {
+        var name = NameExtensions.getComponentName(component);
+        var scope = ScopeExtensions.getScope(component);
+    }
+
     public Bean createBean(Class<?> item) throws IncorrectFieldAnnotationsException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
         var name = NameExtensions.getComponentName(item);
         var scope = ScopeExtensions.getScope(item);
@@ -34,9 +40,14 @@ public class BeanFactory {
     private Object createInstance(Class<?> beanClass) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, IncorrectFieldAnnotationsException, IOException {
         var injector = this.context.getInjector();
 
-        // Создаём сам бин
-        var constructor = beanClass.getDeclaredConstructor();
-        var instance = constructor.newInstance();
+        var constructors = beanClass.getConstructors();
+        if (constructors.length != 1) {
+            throw new RuntimeException("Only one constructor should be presented");
+        }
+
+        var constructor = constructors[0];
+
+        var instance = injector.injectIntoConstructor(constructor);
 
         var fields = beanClass.getDeclaredFields();
         for (var field : fields) {
@@ -52,8 +63,6 @@ public class BeanFactory {
                 injector.injectField(beanClass, field, instance);
             }
         }
-
-        var constructors = Arrays.stream(beanClass.getConstructors()).collect(Collectors.toList());
 
         return instance;
     }
