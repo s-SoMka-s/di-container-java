@@ -1,6 +1,6 @@
 package cases.music4;
 
-import framework.annotation.Scope;
+import framework.annotations.Scope;
 
 import javax.inject.Named;
 

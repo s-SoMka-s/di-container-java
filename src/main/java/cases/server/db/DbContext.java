@@ -2,7 +2,7 @@ package cases.server.db;
 
 import cases.server.entitiies.Mail;
 import cases.server.entitiies.User;
-import framework.annotation.Scope;
+import framework.annotations.Scope;
 
 import java.util.ArrayList;
 import java.util.List;

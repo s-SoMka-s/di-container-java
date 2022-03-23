@@ -2,7 +2,7 @@ package framework.context;
 
 import framework.Bean;
 import framework.Scope;
-import framework.annotation.Value;
+import framework.annotations.Value;
 import lombok.SneakyThrows;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
@@ -422,14 +422,14 @@ public class Context {
      * @return скоп класса
      */
     private Scope getScope(Class clazz) {
-        if (clazz.isAnnotationPresent(framework.annotation.Scope.class)) {
-            if (((framework.annotation.Scope) clazz.getAnnotation(framework.annotation.Scope.class)).value().equals("singleton")) {
+        if (clazz.isAnnotationPresent(framework.annotations.Scope.class)) {
+            if (((framework.annotations.Scope) clazz.getAnnotation(framework.annotations.Scope.class)).value().equals("singleton")) {
                 return Scope.SINGLETON;
             }
-            if (((framework.annotation.Scope) clazz.getAnnotation(framework.annotation.Scope.class)).value().equals("thread")) {
+            if (((framework.annotations.Scope) clazz.getAnnotation(framework.annotations.Scope.class)).value().equals("thread")) {
                 return Scope.THREAD;
             }
-            if (((framework.annotation.Scope) clazz.getAnnotation(framework.annotation.Scope.class)).value().equals("prototype")) {
+            if (((framework.annotations.Scope) clazz.getAnnotation(framework.annotations.Scope.class)).value().equals("prototype")) {
                 return Scope.PROTOTYPE;
             }
             throw new RuntimeException("Specified scope does not exist in class: " + clazz);

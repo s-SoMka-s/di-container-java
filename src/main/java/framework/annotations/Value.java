@@ -1,4 +1,4 @@
-package framework.annotation;
+package framework.annotations;
 
 import java.lang.annotation.*;
 
