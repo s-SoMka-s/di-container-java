@@ -3,15 +3,14 @@ package cases.server.controllers;
 import cases.server.db.interfaces.Repository;
 import cases.server.entitiies.Mail;
 import cases.server.servicies.interfaces.MailService;
-
-import javax.inject.Inject;
+import framework.annotations.Autowired;
 
 public class MailController {
     private final MailService googleMailer;
     private final MailService yandexMailer;
     private final Repository<Mail> mails;
 
-    @Inject
+    @Autowired
     public MailController(MailService googleMailer, MailService yandexMailer, Repository<Mail> mails) {
         this.googleMailer = googleMailer;
         this.yandexMailer = yandexMailer;
