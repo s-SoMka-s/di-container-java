@@ -17,7 +17,11 @@ public class NameExtensions {
     }
 
     public static String getInjectableParameterName(Parameter parameter) {
-        var name = parameter.getAnnotation(Inject.class).value();
+        var name = "";
+        if (parameter.isAnnotationPresent(Inject.class)) {
+            name = parameter.getAnnotation(Inject.class).value();
+        }
+
         if (name.isEmpty() || name.isBlank()) {
             return getDefaultName(parameter.getType());
         }

@@ -7,13 +7,11 @@ import framework.config.Configuration;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.NameExtensions;
 import framework.injector.Injector;
-import lombok.SneakyThrows;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 
 public class NewContext {
     private final BeanFactory beanFactory;
@@ -76,7 +74,13 @@ public class NewContext {
 
         for (var component : components) {
             var bean = this.beanFactory.createBean(component);
+            if (bean == null) {
+                continue;
+            }
+
             beanStore.add(bean);
         }
+        beanStore.ensureHasNoCyclicDependency();
+
     }
 }
