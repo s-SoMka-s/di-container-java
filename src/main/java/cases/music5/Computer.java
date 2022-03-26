@@ -1,11 +1,11 @@
 package cases.music5;
 
-import implementation.annotation.Scope;
+import framework.annotations.Scope;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-@Scope("prototype")
+@Scope(framework.enums.Scope.PROTOTYPE)
 @Named("PC")
 public class Computer {
     @Inject

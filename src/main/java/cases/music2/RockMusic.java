@@ -1,11 +1,11 @@
 package cases.music2;
 
-import implementation.annotation.Scope;
+import framework.annotations.Scope;
 
 import javax.inject.Named;
 
 //@Named
-@Scope("prototype")
+@Scope(framework.enums.Scope.PROTOTYPE)
 @Named("rockMusic")
 public class RockMusic implements Music {
     @Override

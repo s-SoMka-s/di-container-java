@@ -1,13 +1,13 @@
 package cases.music6;
 
-import implementation.annotation.Scope;
-import implementation.annotation.Value;
+import framework.annotations.Scope;
+import framework.annotations.Value;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 @Named
-@Scope("prototype")
+@Scope(framework.enums.Scope.PROTOTYPE)
 public class MusicPlayer {
 
     @Value("$volume")
@@ -27,6 +27,17 @@ public class MusicPlayer {
 
     public String playMusic() {
         return "Playing: " + classicalMusic.getSong() + ", " + rockMusic.getSong();
+    }
+
+    private HeadPhones headPhones;
+
+    @Inject
+    public MusicPlayer(HeadPhones headPhones) {
+        this.headPhones = headPhones;
+    }
+
+    public void getModel() {
+        this.headPhones.getModel();
     }
 
     public int getVolume() {
