@@ -20,6 +20,7 @@ public class ComponentClass {
     private final Scope scope;
 
     private ArrayList<ComponentNode> childNodes = new ArrayList<>();
+    private Object instance = null;
 
     public ComponentClass(Class<?> clazz) {
         this.clazz = clazz;
@@ -82,5 +83,13 @@ public class ComponentClass {
 
     public boolean needLazyInitialization() {
         return this.childNodes.stream().anyMatch(ComponentNode::needLazyInitialization);
+    }
+
+    public Object getInstance() {
+        return instance;
+    }
+
+    public void setInstance(Object instance) {
+        this.instance = instance;
     }
 }

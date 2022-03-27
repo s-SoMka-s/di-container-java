@@ -64,8 +64,9 @@ public class NewContext {
 
     public <T> T getType(Class<T> type) {
         var name = NameExtensions.getComponentName(type);
+        var bean = this.beanStore.get(name);
 
-        return (T)this.beanStore.get(name).getBean();
+        return (T)bean.getBean();
     }
 
     public void Run(Class<?> mainClass) throws IncorrectFieldAnnotationsException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
