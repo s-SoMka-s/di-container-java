@@ -1,17 +1,20 @@
 package framework.context;
 
 import framework.annotations.Component;
-import framework.beans.BeanFactory;
-import framework.beans.BeanStore;
+import framework.beans.*;
 import framework.config.Configuration;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.NameExtensions;
 import framework.injector.Injector;
+import framework.scanner.Scanner;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class NewContext {
     private final BeanFactory beanFactory;
@@ -68,19 +71,22 @@ public class NewContext {
     public void Run(Class<?> mainClass) throws IncorrectFieldAnnotationsException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
         var packageToScan = mainClass.getPackageName();
 
-        this.scanner = new Reflections(packageToScan);
+        var scanner = new Scanner(packageToScan);
 
-        var components = scanner.getTypesAnnotatedWith(Component.class);
+        var candidates = scanner.getAllComponents();
+        var factory = new ComponentsFactory(new Scanner(packageToScan));
+        factory.createComponents(candidates);
+        var scheme = factory.createDependenciesScheme();
 
-        for (var component : components) {
-            var bean = this.beanFactory.createBean(component);
-            if (bean == null) {
-                continue;
-            }
-
-            beanStore.add(bean);
-        }
-        beanStore.ensureHasNoCyclicDependency();
+//        for (var component : components) {
+//            var bean = this.beanFactory.createBean(component);
+//            if (bean == null) {
+//                continue;
+//            }
+//
+//            beanStore.add(bean);
+//        }
+//        beanStore.ensureHasNoCyclicDependency();
 
     }
 }
