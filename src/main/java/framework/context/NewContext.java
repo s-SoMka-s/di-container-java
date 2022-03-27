@@ -22,7 +22,7 @@ public class NewContext {
     private final Injector injector;
 
     private Configuration configuration;
-    private Reflections scanner;
+    private Scanner scanner;
 
 
     public NewContext() {
@@ -58,7 +58,7 @@ public class NewContext {
         return this.injector;
     }
 
-    public Reflections getScanner() {
+    public Scanner getScanner() {
         return this.scanner;
     }
 
@@ -72,13 +72,29 @@ public class NewContext {
         var packageToScan = mainClass.getPackageName();
 
         var scanner = new Scanner(packageToScan);
+        this.scanner = scanner;
 
         var candidates = scanner.getAllComponents();
         var factory = new ComponentsFactory(new Scanner(packageToScan));
         factory.createComponents(candidates);
         var scheme = factory.createComponentsScheme();
         scheme.ensureHasNoCircularDependency();
+        var components = scheme.getRootComponents();
+        for (var component : components) {
+            if (component.needLazyInitialization()) {
+                continue;
+            }
 
+            var bean = this.beanFactory.createBeanFromComponent(component);
+            if (bean == null) {
+                continue;
+            }
+
+            beanStore.add(bean);
+        }
+
+
+//        var components = scanner.getAllComponents();
 //        for (var component : components) {
 //            var bean = this.beanFactory.createBean(component);
 //            if (bean == null) {

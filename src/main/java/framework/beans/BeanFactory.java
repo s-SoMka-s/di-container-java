@@ -15,9 +15,9 @@ public class BeanFactory {
         this.context = context;
     }
 
-    public void createBeanFromComponent(Class<?> component) {
-        var name = NameExtensions.getComponentName(component);
-        var scope = ScopeExtensions.getScope(component);
+    public Bean createBeanFromComponent(ComponentClass component) throws IncorrectFieldAnnotationsException, IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+        var instance = createInstance(component.getType());
+        return new Bean(component);
     }
 
     public Bean createBean(Class<?> item) throws IncorrectFieldAnnotationsException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
@@ -47,7 +47,6 @@ public class BeanFactory {
         if (instance == null) {
             return null;
         }
-
 
         var fields = beanClass.getDeclaredFields();
         for (var field : fields) {

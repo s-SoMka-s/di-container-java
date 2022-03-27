@@ -7,6 +7,8 @@ public class ComponentNode {
     private final ComponentType type;
     private final Annotation[] annotations;
 
+    private boolean needLazyInitialization = false;
+
     // Создание рут компонента
     public ComponentNode(ComponentClass component) {
         this.component = component;
@@ -23,6 +25,10 @@ public class ComponentNode {
 
     public ComponentClass getComponent() {
         return this.component;
+    }
+
+    public boolean needLazyInitialization() {
+        return needLazyInitialization;
     }
 }
 

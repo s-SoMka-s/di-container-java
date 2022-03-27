@@ -22,6 +22,12 @@ public class Bean extends ContextBean {
 //        context = ctx;
 //    }
 
+    public Bean(ComponentClass component) {
+        this.clazz = component.getType();
+        this.name = component.getName();
+        this.scope = component.getScope();
+    }
+
     public Bean(Class clazz, String name, Scope scope, Object bean) {
         this.clazz = clazz;
         this.name = name;

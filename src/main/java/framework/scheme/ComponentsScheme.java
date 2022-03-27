@@ -4,6 +4,7 @@ import framework.beans.ComponentClass;
 import framework.beans.ComponentNode;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ComponentsScheme {
     private final ArrayList<ComponentNode> nodes;
@@ -67,6 +68,10 @@ public class ComponentsScheme {
         }
         colors.put(current, Colors.Black);
         return false;
+    }
+
+    public Set<ComponentClass> getRootComponents() {
+        return nodes.stream().map(n -> n.getComponent()).collect(Collectors.toSet());
     }
 
     private enum Colors {

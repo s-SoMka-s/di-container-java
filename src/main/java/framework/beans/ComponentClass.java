@@ -11,7 +11,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,5 +74,13 @@ public class ComponentClass {
 
     public ArrayList<ComponentNode> getChildNodes() {
         return this.childNodes;
+    }
+
+    public Scope getScope() {
+        return this.scope;
+    }
+
+    public boolean needLazyInitialization() {
+        return this.childNodes.stream().anyMatch(ComponentNode::needLazyInitialization);
     }
 }
