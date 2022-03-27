@@ -1,6 +1,7 @@
 package framework.beans;
 
 import framework.scanner.Scanner;
+import framework.scheme.ComponentsScheme;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -24,7 +25,7 @@ public class ComponentsFactory {
         }
     }
 
-    public ArrayList<ComponentNode> createDependenciesScheme() {
+    public ComponentsScheme createComponentsScheme() {
         var nodes = new ArrayList<ComponentNode>(components.size());
 
         for (var component : components) {
@@ -38,7 +39,7 @@ public class ComponentsFactory {
             nodes.add(new ComponentNode(component));
         }
 
-        return nodes;
+        return new ComponentsScheme(nodes);
     }
 
     private ArrayList<ComponentNode> getFieldsChildren(ComponentClass component) {

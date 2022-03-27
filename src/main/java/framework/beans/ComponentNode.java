@@ -20,5 +20,9 @@ public class ComponentNode {
         this.annotations = annotations;
         this.type = type;
     }
+
+    public ComponentClass getComponent() {
+        return this.component;
+    }
 }
 

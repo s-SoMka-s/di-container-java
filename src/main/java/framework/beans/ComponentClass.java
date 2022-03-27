@@ -72,4 +72,8 @@ public class ComponentClass {
     public void setChildren(List<ComponentNode> children) {
         this.childNodes.addAll(children);
     }
+
+    public ArrayList<ComponentNode> getChildNodes() {
+        return this.childNodes;
+    }
 }

@@ -76,7 +76,8 @@ public class NewContext {
         var candidates = scanner.getAllComponents();
         var factory = new ComponentsFactory(new Scanner(packageToScan));
         factory.createComponents(candidates);
-        var scheme = factory.createDependenciesScheme();
+        var scheme = factory.createComponentsScheme();
+        scheme.ensureHasNoCircularDependency();
 
 //        for (var component : components) {
 //            var bean = this.beanFactory.createBean(component);
