@@ -4,6 +4,7 @@ import cases.server.controllers.UsersController;
 import cases.server.servicies.implementations.GoogleMailService;
 import framework.context.ContextBuilder;
 import framework.exceptions.IncorrectFieldAnnotationsException;
+import framework.scanner.Scanner;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -16,12 +17,12 @@ public class Server {
 
         context.run(Server.class);
 
-        var mailer = context.getType(GoogleMailService.class);
-        mailer.sendMail();
-
-        var userController = context.getType(UsersController.class);
-        userController.addUser("Nick");
-        userController.addUser("Tom");
-        userController.allSayHi();
+//        var mailer = context.getType(GoogleMailService.class);
+//        mailer.sendMail();
+//
+//        var userController = context.getType(UsersController.class);
+//        userController.addUser("Nick");
+//        userController.addUser("Tom");
+//        userController.allSayHi();
     }
 }

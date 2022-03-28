@@ -7,7 +7,11 @@ import org.reflections.Reflections;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Scanner {
     private final Reflections scanner;
@@ -36,8 +40,47 @@ public class Scanner {
         return null;
     }
 
-    public void getInjectableConstructorParameters(Class<?> clazz) {
+    /**
+     * Returns injectable component for constructor parameter.
+     * @param parameter constructor parameter, can be represented as named type, interface, generic interface or simple class
+     * @return desired component or null, if there is no suitable component
+     */
+    public Class<?> getComponent(Parameter parameter) {
+        if (parameter.isAnnotationPresent(Inject.class)) {
+            var name = parameter.getAnnotation(Inject.class).value();
+            if (!name.isBlank() && !name.isEmpty()) {
+                return getNameableComponent(name);
+            }
+        }
 
+        var type = parameter.getType();
+        if (type.isInterface()) {
+            if (isGeneric(type)) {
+                return getGenericImplementation(parameter);
+            }
+            else {
+                return getImplementation(type);
+            }
+        }
+
+        return type;
+    }
+
+    /**
+     * Returns injectable implementation of parameter, represented by generic interface
+     * @param parameter constructor or method parameter
+     * @return desired implementation, or null if there is no suitable implementations
+     */
+    public Class<?> getGenericImplementation(Parameter parameter) {
+        var type = parameter.getType();
+        var parameterizedType = parameter.getParameterizedType();
+
+        return scanner.getSubTypesOf(type)
+                .stream()
+                .filter(t -> t.isAnnotationPresent(Component.class))
+                .filter(t -> Arrays.asList(t.getGenericInterfaces()).contains(parameterizedType))
+                .findFirst()
+                .orElse(null);
     }
 
     public Class<?> getImplementation(Parameter parameter) {
@@ -50,7 +93,12 @@ public class Scanner {
 
         var type = parameter.getType();
         if (type.isInterface()) {
-            return getImplementation(type);
+            if (isGeneric(type)) {
+                var typeName = parameter.getParameterizedType().getTypeName();
+            }
+            else {
+                return getImplementation(type);
+            }
         }
 
         return type;
@@ -71,12 +119,25 @@ public class Scanner {
     }
 
     public Class<?> getImplementation(Class<?> type) {
-        var subtypes = scanner.getSubTypesOf(type);
+        return scanner.getSubTypesOf(type)
+                .stream()
+                .filter(t -> t.isAnnotationPresent(Component.class))
+                .findFirst()
+                .orElse(null);
+    }
 
-        return subtypes.stream().findFirst().orElse(null);
+    private List<Class<?>> getImplementations(Class<?> interfaceType) {
+        return scanner.getSubTypesOf(interfaceType)
+                .stream()
+                .filter(t -> t.isAnnotationPresent(Component.class))
+                .collect(Collectors.toList());
     }
 
     public Set getInterfaceImplementations(Class<?> type) {
         return scanner.getSubTypesOf(type);
+    }
+
+    private boolean isGeneric(Class<?> type) {
+        return type.getTypeParameters().length > 0;
     }
 }

@@ -60,6 +60,8 @@ public class ConstructorInjector {
                 continue;
             }
 
+            var comp = scanner.getComponent(parameter);
+
             if (parameter.isAnnotationPresent(Inject.class)) {
                 var res = injectNameable(parameter);
                 if (res == null) {
