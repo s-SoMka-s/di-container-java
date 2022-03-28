@@ -15,16 +15,28 @@ public class BeanFactory {
         this.context = context;
     }
 
-    public Bean createBeanFromComponent(ComponentClass component) throws IncorrectFieldAnnotationsException, IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        var instance = createInstance(component);
+    public Bean createBeanFromComponent(ComponentClass component) {
+        Object instance = null;
+        try {
+            instance = createInstance(component);
+        } catch (IncorrectFieldAnnotationsException | IOException | InvocationTargetException | NoSuchMethodException |
+                InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
         return new Bean(component, instance);
     }
 
-    public Bean createBean(Class<?> item) throws IncorrectFieldAnnotationsException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
+    public Bean createBean(Class<?> item) {
         var name = NameExtensions.getComponentName(item);
         var scope = ScopeExtensions.getScope(item);
 
-        var instance = createInstance(item);
+        Object instance = null;
+        try {
+            instance = createInstance(item);
+        } catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException |
+                IncorrectFieldAnnotationsException | IOException e) {
+            e.printStackTrace();
+        }
         if (instance == null) {
             return null;
         }

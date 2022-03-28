@@ -1,12 +1,12 @@
 package cases.music6;
 
+import framework.annotations.Component;
 import framework.annotations.Scope;
 
-import javax.inject.Named;
+import static framework.enums.Scope.*;
 
-//@Named
-@Scope(framework.enums.Scope.PROTOTYPE)
-@Named("rockMusic")
+@Scope(THREAD)
+@Component("rockMusic")
 public class RockMusic implements Music {
     @Override
     public String getSong() {

@@ -1,28 +1,18 @@
 package cases.music6;
 
 import framework.annotations.Component;
+import framework.annotations.Inject;
 import framework.annotations.Scope;
-import framework.annotations.Value;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import static framework.enums.Scope.PROTOTYPE;
 
-//@Named("PC")
+@Scope(PROTOTYPE)
 @Component("PC")
-@Scope(framework.enums.Scope.PROTOTYPE)
 public class Computer {
-    //@Value("Macbook Air 13")
-    @Value("$name")
-    private String name;
-
     @Inject
     private MusicPlayer musicPlayer;
 
-    public String result() {
+    public String result(){
         return "Computer: " + " " + musicPlayer.playMusic();
-    }
-
-    public String getName() {
-        return name;
     }
 }

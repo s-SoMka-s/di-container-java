@@ -28,7 +28,7 @@ public class NewContext {
     }
 
     public void setConfiguration(@Nullable String path) {
-        if (path != null){
+        if (path != null) {
             this.configuration = new Configuration(path);
         }
     }
@@ -61,7 +61,7 @@ public class NewContext {
         var name = NameExtensions.getComponentName(type);
         var bean = this.beanStore.get(name);
 
-        return (T)bean.getBean();
+        return (T) bean.getBean();
     }
 
     public void run(Class<?> mainClass) {
@@ -84,12 +84,7 @@ public class NewContext {
                 continue;
             }
 
-            Bean bean = null;
-            try {
-                bean = this.beanFactory.createBeanFromComponent(component);
-            } catch (IncorrectFieldAnnotationsException | IOException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
-                e.printStackTrace();
-            }
+            Bean bean = this.beanFactory.createBeanFromComponent(component);
             if (bean == null) {
                 continue;
             }
