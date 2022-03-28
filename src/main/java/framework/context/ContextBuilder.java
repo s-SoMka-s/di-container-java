@@ -1,7 +1,5 @@
 package framework.context;
 
-import cases.server.Server;
-
 public class ContextBuilder {
     private NewContext context;
 

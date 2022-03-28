@@ -1,9 +1,12 @@
 package cases.music6;
 
+import framework.annotations.Component;
+
 import javax.inject.Named;
 
 //@Named
-@Named("classicalMusic")
+//@Named("classicalMusic")
+@Component
 public class ClassicalMusic implements Music {
     @Override
     public String getSong() {

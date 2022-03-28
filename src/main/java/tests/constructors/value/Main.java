@@ -9,7 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 public class Main {
     public static void main(String[] args) throws IncorrectFieldAnnotationsException, IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         var context = new ContextBuilder().Build();
-        context.Run(Main.class);
+        context.run(Main.class);
 
         var src = context.getType(RemoteSource.class);
         var url = src.getUrl();

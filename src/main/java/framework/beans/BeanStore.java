@@ -9,7 +9,7 @@ public class BeanStore {
     private final HashMap<String, Bean> beans;
     private final HashMap<String, String> deferredBeans;
 
-    public BeanStore(){
+    public BeanStore() {
         this.beans = new HashMap<>();
         deferredBeans = new HashMap<>();
     }

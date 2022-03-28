@@ -39,9 +39,8 @@ public class NameExtensions {
     }
 
     public static String getDefaultName(Class<?> item) {
-        var divided = item.getTypeName().split("\\.");
-        var className = divided[divided.length - 1];
-
-        return className;
+        var a = item.getTypeName();
+        return a.substring(0, 1).toLowerCase() +
+                a.substring(1);
     }
 }

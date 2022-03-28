@@ -1,6 +1,5 @@
 package framework.context;
 
-import framework.annotations.Component;
 import framework.beans.*;
 import framework.config.Configuration;
 import framework.exceptions.IncorrectFieldAnnotationsException;
@@ -8,13 +7,9 @@ import framework.extensions.NameExtensions;
 import framework.injector.Injector;
 import framework.scanner.Scanner;
 import org.jetbrains.annotations.Nullable;
-import org.reflections.Reflections;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 public class NewContext {
     private final BeanFactory beanFactory;
@@ -69,12 +64,15 @@ public class NewContext {
         return (T)bean.getBean();
     }
 
-    public void Run(Class<?> mainClass) throws IncorrectFieldAnnotationsException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
-        var packageToScan = mainClass.getPackageName();
+    public void run(Class<?> mainClass) {
+        run(mainClass.getPackageName());
+    }
 
+    public void run(String packageToScan) {
         var scanner = new Scanner(packageToScan);
         this.scanner = scanner;
 
+        new Bean(beanFactory);
         var candidates = scanner.getAllComponents();
         var factory = new ComponentsFactory(new Scanner(packageToScan));
         factory.createComponents(candidates);
@@ -86,7 +84,12 @@ public class NewContext {
                 continue;
             }
 
-            var bean = this.beanFactory.createBeanFromComponent(component);
+            Bean bean = null;
+            try {
+                bean = this.beanFactory.createBeanFromComponent(component);
+            } catch (IncorrectFieldAnnotationsException | IOException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
             if (bean == null) {
                 continue;
             }

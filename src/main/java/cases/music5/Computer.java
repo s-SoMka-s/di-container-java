@@ -1,12 +1,13 @@
 package cases.music5;
 
+import framework.annotations.Component;
+import framework.annotations.Inject;
 import framework.annotations.Scope;
 
-import javax.inject.Inject;
-import javax.inject.Named;
+import static framework.enums.Scope.PROTOTYPE;
 
-@Scope(framework.enums.Scope.PROTOTYPE)
-@Named("PC")
+@Scope(PROTOTYPE)
+@Component("PC")
 public class Computer {
     @Inject
     private MusicPlayer musicPlayer;

@@ -1,14 +1,18 @@
 package framework.beans;
 
+import framework.context.Context;
 import framework.enums.Scope;
 //import framework.context.Context;
+import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.locator.ContextBean;
 import org.springframework.beans.factory.support.ManagedMap;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 
 public class Bean extends ContextBean {
-    //public static Context context;
+    public static BeanFactory beanFactory;
 
     private Class clazz;
     private String name;
@@ -18,9 +22,9 @@ public class Bean extends ContextBean {
     //private initParams;
     //private constParams;
 
-//    //public Bean(Context ctx) {
-//        context = ctx;
-//    }
+    public Bean(BeanFactory bf) {
+        beanFactory = bf;
+    }
 
     public Bean(ComponentClass component, Object instance) {
         this.clazz = component.getType();
@@ -42,11 +46,15 @@ public class Bean extends ContextBean {
         // если singleton, то возвращаем уже сохранённый инстанс
         // если prototype, то возвращаем новый инстанс
         // если thread, то каждому уникальному потоку возвращаем свой инстанс
-        return switch (scope) {
-            case PROTOTYPE -> null;
-            case SINGLETON -> bean;
-            case THREAD -> null;
-        };
+        try {
+            return switch (scope) {
+                case PROTOTYPE -> beanFactory.createBean(clazz).bean;
+                case SINGLETON -> bean;
+                case THREAD -> null;
+            };
+        } catch (IncorrectFieldAnnotationsException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException | IOException e) {
+            e.printStackTrace();
+        }
 //        if (scope.equals(Scope.SINGLETON)) {
 //            return bean;
 //        } else if (scope.equals(Scope.PROTOTYPE)) {
@@ -62,6 +70,7 @@ public class Bean extends ContextBean {
 //        } else {
 //            throw new RuntimeException("Unknown thread!");
 //        }
+        return null;
     }
 
     public Scope getScope() {

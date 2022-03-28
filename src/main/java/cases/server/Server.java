@@ -14,7 +14,7 @@ public class Server {
 
         var context = builder.Build();
 
-        context.Run(Server.class);
+        context.run(Server.class);
 
         var mailer = context.getType(GoogleMailService.class);
         mailer.sendMail();

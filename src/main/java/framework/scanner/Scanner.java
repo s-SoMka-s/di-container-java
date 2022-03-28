@@ -75,4 +75,8 @@ public class Scanner {
 
         return subtypes.stream().findFirst().orElse(null);
     }
+
+    public Set getInterfaceImplementations(Class<?> type) {
+        return scanner.getSubTypesOf(type);
+    }
 }
