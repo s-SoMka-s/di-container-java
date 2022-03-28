@@ -1,4 +1,9 @@
 {
   "volume" : 77,
-  "name" : "Mac Pro"
+  "name" : "Mac Pro",
+  "list" : [
+    "a",
+    "bc",
+    "def"
+  ]
 }

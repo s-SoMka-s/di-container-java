@@ -16,6 +16,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class FieldInjector {
     private final NewContext context;
@@ -42,6 +43,7 @@ public class FieldInjector {
 
         Object diObj;
 
+        // Если в аннотации Inject указан конкретный id
         if (!InjectName.isEmpty()) {
 
             // Если бин для класса/интерф поля уже существует, то просто его достаём
@@ -197,6 +199,26 @@ public class FieldInjector {
             throw new RuntimeException("No such variable id in the config file!" + "\nVariable id: " + rawValue);
         }
 
-        field.set(object, value);
+        if (field.getType() != ArrayList.class && value.getClass() == ArrayList.class) {
+            field.set(object, toArray((ArrayList) value));
+        } else {
+            field.set(object, value);
+        }
+    }
+
+    /**
+     * List to Array for any type
+     *
+     * @param list The list to be converted into an array
+     * @param <T>  -
+     * @return array
+     */
+    public static <T> T[] toArray(List<T> list) {
+        T[] toR = (T[]) java.lang.reflect.Array.newInstance(list.get(0)
+                .getClass(), list.size());
+        for (int i = 0; i < list.size(); i++) {
+            toR[i] = list.get(i);
+        }
+        return toR;
     }
 }

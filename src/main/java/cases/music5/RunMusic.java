@@ -8,7 +8,7 @@ import framework.context.ContextBuilder;
 public class RunMusic {
     public static void main(String[] args) {
         var builder = new ContextBuilder();
-        var context = builder.Build();
+        var context = builder.setConfiguration("src/main/resources/valuesConfig.json").Build();
 
         context.run("cases.music5");
 
@@ -29,6 +29,8 @@ public class RunMusic {
 
         System.out.println(musicPlayer1);
         System.out.println(musicPlayer2);
+
+        System.out.println(musicPlayer1.getVolume());
 
         System.out.println(computer1);
         System.out.println(computer2);
