@@ -15,7 +15,7 @@ public class MailController {
     private final Repository<Mail> mails;
 
     @Autowired
-    public MailController(@Value("5") int delay, @Inject MailService googleMailer, MailService yandexMailer, Repository<Mail> mails) {
+    public MailController(@Value("5") int delay, @Inject("googleMailer") MailService googleMailer, @Inject("yandexMailer") MailService yandexMailer, Repository<Mail> mails) {
         this.googleMailer = googleMailer;
         this.yandexMailer = yandexMailer;
         this.mails = mails;

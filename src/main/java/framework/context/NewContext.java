@@ -1,17 +1,20 @@
 package framework.context;
 
 import framework.annotations.Component;
-import framework.beans.BeanFactory;
-import framework.beans.BeanStore;
+import framework.beans.*;
 import framework.config.Configuration;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.NameExtensions;
 import framework.injector.Injector;
+import framework.scanner.Scanner;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class NewContext {
     private final BeanFactory beanFactory;
@@ -19,7 +22,7 @@ public class NewContext {
     private final Injector injector;
 
     private Configuration configuration;
-    private Reflections scanner;
+    private Scanner scanner;
 
 
     public NewContext() {
@@ -55,32 +58,53 @@ public class NewContext {
         return this.injector;
     }
 
-    public Reflections getScanner() {
+    public Scanner getScanner() {
         return this.scanner;
     }
 
     public <T> T getType(Class<T> type) {
         var name = NameExtensions.getComponentName(type);
+        var bean = this.beanStore.get(name);
 
-        return (T)this.beanStore.get(name).getBean();
+        return (T)bean.getBean();
     }
 
     public void Run(Class<?> mainClass) throws IncorrectFieldAnnotationsException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
         var packageToScan = mainClass.getPackageName();
 
-        this.scanner = new Reflections(packageToScan);
+        var scanner = new Scanner(packageToScan);
+        this.scanner = scanner;
 
-        var components = scanner.getTypesAnnotatedWith(Component.class);
-
+        var candidates = scanner.getAllComponents();
+        var factory = new ComponentsFactory(new Scanner(packageToScan));
+        factory.createComponents(candidates);
+        var scheme = factory.createComponentsScheme();
+        scheme.ensureHasNoCircularDependency();
+        var components = scheme.getRootComponents();
         for (var component : components) {
-            var bean = this.beanFactory.createBean(component);
+            if (component.needLazyInitialization()) {
+                continue;
+            }
+
+            var bean = this.beanFactory.createBeanFromComponent(component);
             if (bean == null) {
                 continue;
             }
 
             beanStore.add(bean);
         }
-        beanStore.ensureHasNoCyclicDependency();
+
+
+//        var components = scanner.getAllComponents();
+//        for (var component : components) {
+//            var bean = this.beanFactory.createBean(component);
+//            if (bean == null) {
+//                continue;
+//            }
+//
+//            beanStore.add(bean);
+//        }
+//        beanStore.ensureHasNoCyclicDependency();
 
     }
 }

@@ -15,6 +15,6 @@ public class UsersController {
     }
 
     public void allSayHi(){
-        users.getAll().forEach(User::sayHi);
+        //users.getAll().forEach(User::sayHi);
     }
 }

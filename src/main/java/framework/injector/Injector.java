@@ -2,6 +2,7 @@ package framework.injector;
 
 import framework.annotations.Inject;
 import framework.annotations.Value;
+import framework.beans.ComponentClass;
 import framework.context.NewContext;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.FieldExtensions;
@@ -37,13 +38,11 @@ public class Injector {
         }
     }
 
-    public Object trtInjectIntoConstructor(Class<?> beanClass, Constructor constructor) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public Object trtInjectIntoConstructor(Class<?> beanClass, Constructor constructor) throws IOException, InvocationTargetException, InstantiationException, IllegalAccessException, IncorrectFieldAnnotationsException, NoSuchMethodException {
         return this.constructorInjector.injectIntoConstructor(beanClass, constructor);
     }
 
-
-
-
-
-
+    public Object trtInjectIntoConstructor(ComponentClass component) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException, IncorrectFieldAnnotationsException, NoSuchMethodException {
+        return this.constructorInjector.injectIntoConstructor(component);
+    }
 }

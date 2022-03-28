@@ -5,7 +5,7 @@ import framework.annotations.Component;
 import framework.annotations.Inject;
 import framework.annotations.Value;
 
-@Component
+@Component("googleMailer")
 public class GoogleMailService implements MailService {
     @Value("5")
     private int Delay;
