@@ -1,8 +1,6 @@
 package framework.injector;
 
 import framework.annotations.Autowired;
-import framework.annotations.Component;
-import framework.annotations.Inject;
 import framework.annotations.Value;
 import framework.beans.ComponentClass;
 import framework.context.NewContext;
@@ -47,6 +45,7 @@ public class ConstructorInjector {
 
         var beans = this.context.getBeanStore();
         var scanner = this.context.getScanner();
+        var factory = this.context.getBeanFactory();
 
         // Конструктор помечен Autowired
         var args = new Object[parameters.length];
@@ -60,81 +59,24 @@ public class ConstructorInjector {
                 continue;
             }
 
-            var comp = scanner.getComponent(parameter);
-
-            if (parameter.isAnnotationPresent(Inject.class)) {
-                var res = injectNameable(parameter);
-                if (res == null) {
-                    // TODO Add deferred
-                    var name = NameExtensions.getInjectableParameterName(parameter);
-                    var waiterName = NameExtensions.getComponentName(beanClass);
-
-                    beans.addDeferred(waiterName, name);
-                }
-                args[index] = res;
-                continue;
+            var component = scanner.getComponent(parameter);
+            if (component == null) {
+                throw new RuntimeException("There is no suitable component for this parameter");
             }
 
-            // Unnamed parameter injection
-            var name = NameExtensions.getInjectableParameterName(parameter);
-
-            var type = parameter.getType();
-            var typeName = NameExtensions.getDefaultName(type);
-
-            // интерфейс без явной связи
-            if (type.isInterface() && typeName.equals(name)) {
-                var impl = scanner.getImplementation(parameter);
+            var componentName = NameExtensions.getComponentName(component);
+            var existed = beans.get(componentName);
+            if (existed == null) {
+                existed = factory.createBean(parameter.getType());
+                beans.add(existed);
             }
 
-            var bean = tryInstantiateParameter(parameter);
-            if (bean == null) {
-                // TODO Add deferred
-                var waiterName = NameExtensions.getComponentName(beanClass);
-                beans.addDeferred(waiterName, name);
-            }
-
-            args[index] = bean;
+            args[index] = existed.getBean();
+            continue;
         }
 
         var hasDeferred = Arrays.stream(args).anyMatch(Objects::isNull);
         return hasDeferred ? null : constructor.newInstance(args);
-    }
-
-    private Object tryInstantiateParameter(Parameter parameter) throws IncorrectFieldAnnotationsException, IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        var name = NameExtensions.getInjectableParameterName(parameter);
-
-        var factory = this.context.getBeanFactory();
-        var beans = this.context.getBeanStore();
-
-        var existed = beans.getBeanObject(name);
-        if (existed != null) {
-            return existed;
-        }
-
-        if (!parameter.getType().isAnnotationPresent(Component.class)) {
-            return null;
-        }
-
-        var bean = factory.createBean(parameter.getType());
-        beans.add(bean);
-
-        return bean.getBean();
-    }
-
-    private Object injectNameable(Parameter parameter) throws IncorrectFieldAnnotationsException, IOException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        var scanner = this.context.getScanner();
-
-        var name = NameExtensions.getInjectableParameterName(parameter);
-
-        var type = parameter.getType();
-        var typeName = NameExtensions.getDefaultName(type);
-
-        // интерфейс без явной связи
-        if (type.isInterface() && typeName.equals(name)) {
-            var impl = scanner.getImplementation(parameter);
-        }
-
-        return tryInstantiateParameter(parameter);
     }
 
     public Object injectIntoConstructor(ComponentClass component) throws InvocationTargetException, InstantiationException, IllegalAccessException, IOException, IncorrectFieldAnnotationsException, NoSuchMethodException {
