@@ -3,27 +3,22 @@ package framework.injector;
 import framework.annotations.Component;
 import framework.annotations.Inject;
 import framework.annotations.Value;
-import framework.beans.Bean;
-import framework.beans.BeanFactory;
-import framework.context.NewContext;
+import framework.context.Context;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.NameExtensions;
-import framework.scanner.Scanner;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import javax.inject.Named;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FieldInjector {
-    private final NewContext context;
+    private final Context context;
     private ArrayList<String> namesQueue;
 
-    public FieldInjector(NewContext context) {
+    public FieldInjector(Context context) {
         this.context = context;
     }
 
@@ -45,8 +40,8 @@ public class FieldInjector {
 
         Object diObj;
 
-        if (NewContext.queue.contains(field.getName())) {
-            NewContext.cycles.put(field.getName(), NameExtensions.getComponentName(beanClass));
+        if (Context.queue.contains(field.getName())) {
+            Context.cycles.put(field.getName(), NameExtensions.getComponentName(beanClass));
             return;
         }
 

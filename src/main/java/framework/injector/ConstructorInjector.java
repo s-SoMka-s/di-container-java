@@ -3,7 +3,7 @@ package framework.injector;
 import framework.annotations.Autowired;
 import framework.annotations.Value;
 import framework.components.ComponentClass;
-import framework.context.NewContext;
+import framework.context.Context;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.NameExtensions;
 import framework.extensions.ParameterExtensions;
@@ -18,9 +18,9 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class ConstructorInjector {
-    private final NewContext context;
+    private final Context context;
 
-    public ConstructorInjector(NewContext context) {
+    public ConstructorInjector(Context context) {
         this.context = context;
     }
 

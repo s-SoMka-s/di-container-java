@@ -3,7 +3,7 @@ package framework.injector;
 import framework.annotations.Inject;
 import framework.annotations.Value;
 import framework.components.ComponentClass;
-import framework.context.NewContext;
+import framework.context.Context;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.FieldExtensions;
 
@@ -13,11 +13,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 public class Injector {
-    private final NewContext context;
+    private final Context context;
     private final ConstructorInjector constructorInjector;
     private final FieldInjector fieldInjector;
 
-    public Injector(NewContext context) {
+    public Injector(Context context) {
         this.context = context;
         constructorInjector = new ConstructorInjector(context);
         fieldInjector = new FieldInjector(context);

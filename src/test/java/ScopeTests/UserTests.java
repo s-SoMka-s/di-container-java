@@ -1,7 +1,7 @@
 package ScopeTests;
 
 import framework.context.ContextBuilder;
-import framework.context.NewContext;
+import framework.context.Context;
 import org.junit.Test;
 
 import java.util.concurrent.CountDownLatch;
@@ -83,7 +83,7 @@ public class UserTests {
         assert (!music3.equals(music4));
     }
 
-    static NewContext context;
+    static Context context;
 
     @Test
     public void ThreadPrototypeTest() {

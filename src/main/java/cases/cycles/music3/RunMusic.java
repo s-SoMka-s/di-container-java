@@ -1,10 +1,10 @@
 package cases.cycles.music3;
 
 import framework.context.ContextBuilder;
-import framework.context.NewContext;
+import framework.context.Context;
 
 public class RunMusic {
-    static NewContext context;
+    static Context context;
 
     public static void main(String[] args) {
         var builder = new ContextBuilder();

@@ -1,10 +1,10 @@
 package framework.context;
 
 public class ContextBuilder {
-    private NewContext context;
+    private Context context;
 
     public ContextBuilder() {
-        this.context = new NewContext();
+        this.context = new Context();
     }
 
     public ContextBuilder setConfiguration(String path) {
@@ -13,7 +13,7 @@ public class ContextBuilder {
         return this;
     }
 
-    public NewContext Build() {
+    public Context Build() {
         return context;
     }
 }

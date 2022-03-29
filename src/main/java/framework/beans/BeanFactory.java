@@ -1,7 +1,7 @@
 package framework.beans;
 
 import framework.components.ComponentClass;
-import framework.context.NewContext;
+import framework.context.Context;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.NameExtensions;
 import framework.extensions.ScopeExtensions;
@@ -10,9 +10,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 public class BeanFactory {
-    private final NewContext context;
+    private final Context context;
 
-    public BeanFactory(NewContext context) {
+    public BeanFactory(Context context) {
         this.context = context;
     }
 

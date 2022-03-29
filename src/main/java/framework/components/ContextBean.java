@@ -1,12 +1,12 @@
 package framework.components;
 
 //import framework.context.Context;
-import framework.context.NewContext;
+import framework.context.Context;
 
 public class ContextBean {
-    static NewContext context;
+    static Context context;
 
-    public void setContext(NewContext ctx) {
+    public void setContext(Context ctx) {
         context = ctx;
     }
 }
