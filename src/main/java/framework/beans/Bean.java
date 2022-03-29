@@ -2,6 +2,8 @@ package framework.beans;
 
 import framework.enums.Scope;
 import framework.locator.ContextBean;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Bean extends ContextBean {
@@ -58,6 +60,10 @@ public class Bean extends ContextBean {
 
     public Scope getScope() {
         return scope;
+    }
+
+    public Class getClazz() {
+        return clazz;
     }
 
     public String getName() {

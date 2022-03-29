@@ -45,19 +45,23 @@ public class RunMusic {
         public void run() {
             var rm1 = context.getType(RockMusic.class);
             var rm2 = context.getType(RockMusic.class);
+            var cm1 = context.getType(ClassicalMusic.class);
+            var cm2 = context.getType(ClassicalMusic.class);
             var mp1 = context.getType(MusicPlayer.class);
             var mp2 = context.getType(MusicPlayer.class);
 
-            synchronized(obj) {
-            System.out.println("Id: " + Thread.currentThread().getId() + "; rm1: " + rm1);
-            System.out.println("Id: " + Thread.currentThread().getId() + "; rm2: " + rm2);
-            System.out.println("Id: " + Thread.currentThread().getId() + "; mp1: " + mp1);
-            System.out.println("Id: " + Thread.currentThread().getId() + "; mp2: " + mp2);
-            System.out.println("Id: " + Thread.currentThread().getId() + "; mp1 cm: " + mp1.classicalMusic);
-            System.out.println("Id: " + Thread.currentThread().getId() + "; mp1 rm: " + mp1.rockMusic);
-            System.out.println("Id: " + Thread.currentThread().getId() + "; mp2 cm: " + mp2.classicalMusic);
-            System.out.println("Id: " + Thread.currentThread().getId() + "; mp2 rm: " + mp2.rockMusic);
-            System.out.println("");
+            synchronized (obj) {
+                System.out.println("Id: " + Thread.currentThread().getId() + "; rm1: " + rm1);
+                System.out.println("Id: " + Thread.currentThread().getId() + "; rm2: " + rm2);
+                System.out.println("Id: " + Thread.currentThread().getId() + "; cm1: " + cm1);
+                System.out.println("Id: " + Thread.currentThread().getId() + "; cm2: " + cm2);
+                System.out.println("Id: " + Thread.currentThread().getId() + "; mp1: " + mp1);
+                System.out.println("Id: " + Thread.currentThread().getId() + "; mp2: " + mp2);
+                System.out.println("Id: " + Thread.currentThread().getId() + "; mp1 cm: " + mp1.classicalMusic);
+                System.out.println("Id: " + Thread.currentThread().getId() + "; mp1 rm: " + mp1.rockMusic);
+                System.out.println("Id: " + Thread.currentThread().getId() + "; mp2 cm: " + mp2.classicalMusic);
+                System.out.println("Id: " + Thread.currentThread().getId() + "; mp2 rm: " + mp2.rockMusic);
+                System.out.println("");
             }
         }
     }

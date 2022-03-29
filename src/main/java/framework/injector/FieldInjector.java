@@ -4,6 +4,7 @@ import framework.annotations.Component;
 import framework.annotations.Inject;
 import framework.annotations.Value;
 import framework.beans.Bean;
+import framework.beans.BeanFactory;
 import framework.context.NewContext;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.NameExtensions;
@@ -20,6 +21,7 @@ import java.util.List;
 
 public class FieldInjector {
     private final NewContext context;
+    private ArrayList<String> namesQueue;
 
     public FieldInjector(NewContext context) {
         this.context = context;
@@ -42,6 +44,11 @@ public class FieldInjector {
         String InjectName = field.getAnnotation(Inject.class).value();
 
         Object diObj;
+
+        if (NewContext.queue.contains(field.getName())) {
+            NewContext.cycles.put(field.getName(), NameExtensions.getComponentName(beanClass));
+            return;
+        }
 
         // Если в аннотации Inject указан конкретный id
         if (!InjectName.isEmpty()) {

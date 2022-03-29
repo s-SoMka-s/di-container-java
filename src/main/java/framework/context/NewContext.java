@@ -1,5 +1,6 @@
 package framework.context;
 
+import framework.annotations.Inject;
 import framework.beans.*;
 import framework.config.Configuration;
 import framework.exceptions.IncorrectFieldAnnotationsException;
@@ -9,16 +10,25 @@ import framework.scanner.Scanner;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class NewContext {
     private final BeanFactory beanFactory;
     private final BeanStore beanStore;
     private final Injector injector;
 
+    public static ArrayList<String> queue = new ArrayList<>();
+    public static HashMap<String, String> cycles = new HashMap<>();
+    public static ArrayList<Bean> fromCycle = new ArrayList<>();
+    public static ArrayList<Bean> toCycle = new ArrayList<>();
+
     private Configuration configuration;
     private Scanner scanner;
-
 
     public NewContext() {
         this.beanStore = new BeanStore();
@@ -84,14 +94,21 @@ public class NewContext {
                 continue;
             }
 
+            queue.add(component.getName());
             Bean bean = this.beanFactory.createBeanFromComponent(component);
-            if (bean == null) {
-                continue;
+            if (bean != null) {
+                beanStore.add(bean);
+                if (cycles.containsKey(bean.getName())) {
+                    fromCycle.add(bean);
+                }
+                if (cycles.containsValue(bean.getName())) {
+                    toCycle.add(bean);
+                }
+                queue.remove(component.getName());
             }
-
-            beanStore.add(bean);
         }
 
+        cycleResolver();
 
 //        var components = scanner.getAllComponents();
 //        for (var component : components) {
@@ -104,5 +121,47 @@ public class NewContext {
 //        }
 //        beanStore.ensureHasNoCyclicDependency();
 
+    }
+
+    private void cycleResolver() {
+        if (toCycle.size() > 0 && fromCycle.size() > 0) {
+            Field[] fields2 = toCycle.get(0).getBean().getClass().getDeclaredFields();
+            for (Field field2 : fields2) {
+                if (field2.isAnnotationPresent(Inject.class) && fromCycle.get(0).getName().equals(
+                        field2.getName())) {
+                    field2.setAccessible(true);
+                    try {
+                        field2.set(toCycle.get(0).getBean(), fromCycle.get(0).getBean());
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            Field[] fields3 = fromCycle.get(0).getBean().getClass().getDeclaredFields();
+            for (Field field3 : fields3) {
+                if (field3.isAnnotationPresent(Inject.class)) {
+                    field3.setAccessible(true);
+                    try {
+                        field3.set(fromCycle.get(0).getBean(), this.getBeanStore().get(field3.getName()).getBean());
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+
+                    Field[] fields4 = field3.getType().getDeclaredFields();
+                    for (Field field4 : fields4) {
+                        if (field4.isAnnotationPresent(Inject.class) && toCycle.get(0).getName().equals(
+                                field4.getName())) {
+                            field4.setAccessible(true);
+                            try {
+                                field4.set(this.getBeanStore().get(field3.getName()).getBean(), this.getBeanStore().get(field4.getName()).getBean());
+                            } catch (IllegalAccessException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

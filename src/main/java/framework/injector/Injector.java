@@ -6,7 +6,6 @@ import framework.beans.ComponentClass;
 import framework.context.NewContext;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.FieldExtensions;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;

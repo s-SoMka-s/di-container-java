@@ -2,7 +2,6 @@ package framework.beans;
 
 import framework.exceptions.CircularDependencyException;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class BeanStore {
@@ -25,6 +24,10 @@ public class BeanStore {
         }
 
         return beans.get(name);
+    }
+
+    public HashMap<String, Bean> getBeansMap() {
+        return beans;
     }
 
     public Object getBeanObject(String name) {
