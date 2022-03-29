@@ -7,7 +7,7 @@ public class RunMusic {
         var builder = new ContextBuilder();
         var context = builder.setConfiguration("src/main/resources/valuesConfig.json").Build();
 
-        context.run("cases.scope.music2");
+        context.run("cases.scope.music3");
 
         MusicPlayer musicPlayer1 = context.getType(MusicPlayer.class);
         MusicPlayer musicPlayer2 = context.getType(MusicPlayer.class);
