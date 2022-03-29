@@ -16,7 +16,6 @@ import java.util.List;
 
 public class FieldInjector {
     private final Context context;
-    private ArrayList<String> namesQueue;
 
     public FieldInjector(Context context) {
         this.context = context;

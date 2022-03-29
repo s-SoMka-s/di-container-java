@@ -6,7 +6,6 @@ import org.codehaus.jackson.type.TypeReference;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
