@@ -27,6 +27,11 @@ public class RunMusic {
         System.out.println(musicPlayer1);
         System.out.println(musicPlayer2);
 
+        System.out.println(music1);
+        System.out.println(music2);
+        System.out.println(music3);
+        System.out.println(music4);
+
         System.out.println(computer1);
         System.out.println(computer2);
     }
