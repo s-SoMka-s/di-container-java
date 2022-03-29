@@ -1,4 +1,4 @@
-package framework.beans;
+package framework.components;
 
 import framework.annotations.Autowired;
 import framework.annotations.Inject;

@@ -1,4 +1,4 @@
-package framework.beans;
+package framework.components;
 
 import framework.scanner.Scanner;
 import framework.scheme.ComponentsScheme;

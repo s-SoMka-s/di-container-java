@@ -1,7 +1,7 @@
 package framework.scheme;
 
-import framework.beans.ComponentClass;
-import framework.beans.ComponentNode;
+import framework.components.ComponentClass;
+import framework.components.ComponentNode;
 
 import java.util.*;
 import java.util.stream.Collectors;

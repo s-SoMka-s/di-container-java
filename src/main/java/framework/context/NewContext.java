@@ -1,18 +1,16 @@
 package framework.context;
 
-import framework.annotations.Component;
 import framework.annotations.Inject;
 import framework.beans.*;
+import framework.components.ComponentClass;
+import framework.components.ComponentsFactory;
 import framework.config.Configuration;
-import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.NameExtensions;
 import framework.injector.Injector;
 import framework.scanner.Scanner;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class NewContext {

@@ -2,7 +2,7 @@ package framework.injector;
 
 import framework.annotations.Inject;
 import framework.annotations.Value;
-import framework.beans.ComponentClass;
+import framework.components.ComponentClass;
 import framework.context.NewContext;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.FieldExtensions;

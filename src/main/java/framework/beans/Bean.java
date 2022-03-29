@@ -1,5 +1,7 @@
 package framework.beans;
 
+import framework.components.ComponentClass;
+import framework.components.ContextBean;
 import framework.enums.Scope;
 
 import java.util.HashMap;

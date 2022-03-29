@@ -1,4 +1,4 @@
-package framework.beans;
+package framework.components;
 
 //import framework.context.Context;
 import framework.context.NewContext;

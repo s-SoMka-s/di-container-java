@@ -1,4 +1,4 @@
-package framework.beans;
+package framework.components;
 
 public enum ComponentType {
     Component,

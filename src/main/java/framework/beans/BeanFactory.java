@@ -1,5 +1,6 @@
 package framework.beans;
 
+import framework.components.ComponentClass;
 import framework.context.NewContext;
 import framework.exceptions.IncorrectFieldAnnotationsException;
 import framework.extensions.NameExtensions;
