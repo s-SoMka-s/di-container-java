@@ -1,9 +1,7 @@
 package framework.beans;
 
 import framework.enums.Scope;
-import framework.locator.ContextBean;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Bean extends ContextBean {

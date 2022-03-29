@@ -1,4 +1,4 @@
-package framework.locator;
+package framework.beans;
 
 //import framework.context.Context;
 import framework.context.NewContext;

@@ -1,13 +1,7 @@
-package cases.music5;
+package cases.values.music1;
 
 import framework.annotations.Component;
-import framework.annotations.Scope;
 
-import static framework.enums.Scope.PROTOTYPE;
-
-//@Named
-//@Named("classicalMusic")
-@Scope(PROTOTYPE)
 @Component("classicalMusic")
 public class ClassicalMusic implements Music {
     @Override

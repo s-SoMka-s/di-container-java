@@ -3,37 +3,39 @@ package ValuesTests;
 import framework.context.ContextBuilder;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+
 public class UserTests {
 
     @Test
-    public void cycleLengthTwo() {
+    public void internalValues() {
         var builder = new ContextBuilder();
         var context = builder.Build();
 
-        context.run("cases.cycles.music1");
+        context.run("cases.values.music1");
 
-        cases.cycles.music1.RockMusic rockMusic = context.getType(cases.cycles.music1.RockMusic.class);
-        cases.cycles.music1.ClassicalMusic classicalMusic = context.getType(cases.cycles.music1.ClassicalMusic.class);
-
-        assert (rockMusic == classicalMusic.getRockMusic() && classicalMusic == rockMusic.getClassicalMusic());
+        cases.values.music1.Computer computer = context.getType(cases.values.music1.Computer.class);
+        assert(computer.getCost() == 179999);
+        assert(computer.getName().equals("iMac"));
     }
 
     @Test
-    // Why when completing all tests classes mixes while completing only this test everythin is ok????
-    public void cycleLengthThree() {
+    public void externalValues() {
         var builder = new ContextBuilder();
-        var context = builder.Build();
+        var context = builder.setConfiguration("src/main/resources/valuesConfig.json").Build();
 
-        context = builder.Build();
+        context.run("cases.values.music2");
 
-        context.run("cases.cycles.music3");
+        cases.values.music2.Computer computer = context.getType(cases.values.music2.Computer.class);
+        assert(computer.getCost() == 599999);
+        assert(computer.getName().equals("Mac Pro"));
 
-        cases.cycles.music3.RockMusic rockMusic = context.getType(cases.cycles.music3.RockMusic.class);
-        cases.cycles.music3.JazzMusic jazzMusic = context.getType(cases.cycles.music3.JazzMusic.class);
-        cases.cycles.music3.ClassicalMusic classicalMusic = context.getType(cases.cycles.music3.ClassicalMusic.class);
-
-        assert (jazzMusic == classicalMusic.getJazzMusic() && rockMusic == jazzMusic.getRockMusic()
-                && classicalMusic == rockMusic.getClassicalMusic());
+        var result = new ArrayList<>();
+        result.add("a");
+        result.add("bc");
+        result.add("def");
+        result.removeAll(computer.getWords());
+        assert(result.size() == 0);
     }
 
 }

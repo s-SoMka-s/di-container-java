@@ -1,4 +1,4 @@
-package cases.music5;
+package cases.values.music2;
 
 //import framework.context.Context;
 //import org.springframework.context.ApplicationContext;
@@ -10,7 +10,7 @@ public class RunMusic {
         var builder = new ContextBuilder();
         var context = builder.setConfiguration("src/main/resources/valuesConfig.json").Build();
 
-        context.run("cases.music5");
+        context.run("cases.values.music2");
 
         MusicPlayer musicPlayer1 = context.getType(MusicPlayer.class);
         MusicPlayer musicPlayer2 = context.getType(MusicPlayer.class);
@@ -29,8 +29,6 @@ public class RunMusic {
 
         System.out.println(musicPlayer1);
         System.out.println(musicPlayer2);
-
-        System.out.println(musicPlayer1.getVolume());
 
         System.out.println(computer1);
         System.out.println(computer2);

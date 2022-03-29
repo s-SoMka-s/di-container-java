@@ -1,4 +1,4 @@
-package cases.music8;
+package cases.values.music2;
 
 public interface Music {
     String getSong();

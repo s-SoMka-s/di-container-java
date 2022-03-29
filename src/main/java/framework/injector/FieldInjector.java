@@ -190,8 +190,11 @@ public class FieldInjector {
 
         field.setAccessible(true);
         if (!rawValue.startsWith("$")) {
-            field.set(object, mapper.readValue(rawValue, field.getType()));
-
+            if (field.getType() == String.class) {
+                field.set(object, mapper.readValue("\"".concat(rawValue).concat("\""), field.getType()));
+            } else {
+                field.set(object, mapper.readValue(rawValue, field.getType()));
+            }
             return;
         }
 
