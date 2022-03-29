@@ -107,7 +107,7 @@ public class FieldInjector {
 
                     // Если больше 1 реализации -> неопределённость, ибо нельзя однозначно выбрать реализацию
                     if (engagedImplementationClasses.size() > 1) {
-                        throw new RuntimeException("Cannot couple interface: " + beanClass +
+                        throw new RuntimeException("Cannot couple interface: " + field.getType() +
                                 "\nThere are several appropriate implementations!");
                     }
 

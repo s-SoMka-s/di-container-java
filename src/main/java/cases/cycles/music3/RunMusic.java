@@ -1,9 +1,7 @@
-package cases.music8;
+package cases.cycles.music3;
 
 import framework.context.ContextBuilder;
 import framework.context.NewContext;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class RunMusic {
     static NewContext context;
@@ -12,7 +10,7 @@ public class RunMusic {
         var builder = new ContextBuilder();
         context = builder.setConfiguration("src/main/resources/valuesConfig.json").Build();
 
-        context.run("cases.music8");
+        context.run("cases.cycles.music3");
 
         RockMusic rockMusic = context.getType(RockMusic.class);
         JazzMusic jazzMusic = context.getType(JazzMusic.class);
@@ -20,5 +18,8 @@ public class RunMusic {
         System.out.println(rockMusic.getSong());
         System.out.println(jazzMusic.getSong());
         System.out.println(classicalMusic.getSong());
+
+        assert (jazzMusic == classicalMusic.getJazzMusic() && rockMusic == jazzMusic.getRockMusic()
+                && classicalMusic == rockMusic.getClassicalMusic());
     }
 }

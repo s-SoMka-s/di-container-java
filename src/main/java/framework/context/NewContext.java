@@ -1,5 +1,6 @@
 package framework.context;
 
+import framework.annotations.Component;
 import framework.annotations.Inject;
 import framework.beans.*;
 import framework.config.Configuration;
@@ -12,10 +13,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class NewContext {
     private final BeanFactory beanFactory;
@@ -89,6 +87,8 @@ public class NewContext {
         var scheme = factory.createComponentsScheme();
         scheme.ensureHasNoCircularDependency();
         var components = scheme.getRootComponents();
+        checkSimilarIds(components);
+
         for (var component : components) {
             if (component.needLazyInitialization()) {
                 continue;
@@ -121,6 +121,17 @@ public class NewContext {
 //        }
 //        beanStore.ensureHasNoCyclicDependency();
 
+    }
+
+    private void checkSimilarIds(Set<ComponentClass> componentSet) {
+        var components = new ArrayList<>(componentSet);
+        for (int i = 0; i < components.size(); i++) {
+            for (int j = i + 1; j < components.size(); j++) {
+                if (components.get(i).getName().equals(components.get(j).getName())) {
+                    throw new RuntimeException("Several components have the same id!");
+                }
+            }
+        }
     }
 
     private void cycleResolver() {
