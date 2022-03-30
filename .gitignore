@@ -1,5 +1,4 @@
-# Created by https://www.toptal.com/developers/gitignore/api/java,intellij,gradle
-# Edit at https://www.toptal.com/developers/gitignore?templates=java,intellij,gradle
+.gradle/
 
 ### Intellij ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
